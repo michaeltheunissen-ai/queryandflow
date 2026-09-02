@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Approval Decision Support Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .benchmark-pass { color: #059669; font-weight: bold; }
+        .benchmark-fail { color: #dc2626; font-weight: bold; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8 text-gray-800">
+
+    <div class="max-w-5xl mx-auto">
+        <header class="mb-6 border-b pb-4 border-gray-200">
+            <h1 class="text-3xl font-bold text-slate-900">Credit Approval Decision Support Tool</h1>
+            <p class="text-slate-600 mt-1">Leveraged Finance Benchmarks & Pro-Forma Analysis</p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="flex space-x-8 mb-8 border-b border-gray-200 overflow-x-auto">
+            <button onclick="switchTab('tab-capture')" id="btn-tab-capture" class="pb-4 px-1 text-sm tab-active whitespace-nowrap">
+                1. Financial Statement Capture
+            </button>
+            <button onclick="switchTab('tab-proposal')" id="btn-tab-proposal" class="pb-4 px-1 text-sm text-gray-500 hover:text-gray-700 whitespace-nowrap">
+                2. New Debt Proposal
+            </button>
+            <button onclick="switchTab('tab-results')" id="btn-tab-results" class="pb-4 px-1 text-sm text-gray-500 hover:text-gray-700 whitespace-nowrap">
+                3. Credit Analysis Results
+            </button>
+        </nav>
+
+        <!-- Tab 1: Financial Capture -->
+        <div id="tab-capture" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card p-6 border border-gray-200">
+                    <h2 class="text-xl font-semibold mb-4 text-blue-800">Income Statement (Annual)</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500">Yearly Operating Profit (EBITDA)</label>
+                            <input type="number" id="raw-ebitda" value="5000000" oninput="updateFCFDisplay()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-3">
+                            <p class="text-[10px] text-gray-400 mt-1 italic">Profit the business makes before interest, tax, depreciation and amortisation are deducted.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500">Yearly Tax Paid</label>
+                            <input type="number" id="raw-tax" value="300000" oninput="updateFCFDisplay()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-3">
+                            <p class="text-[10px] text-gray-400 mt-1 italic">Actual income tax paid out in cash this year.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500">Yearly Cost to Maintain Equipment & Assets</label>
+                            <input type="number" id="raw-capex" value="150000" oninput="updateFCFDisplay()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-3">
+                            <p class="text-[10px] text-gray-400 mt-1 italic">Spend needed to keep existing equipment, vehicles or property running — not new growth spending.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500">Extra Cash Tied Up in Stock & Unpaid Bills</label>
+                            <input type="number" id="raw-wc" value="50000" oninput="updateFCFDisplay()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-3">
+                            <p class="text-[10px] text-gray-400 mt-1 italic">Cash tied up funding more stock and money owed to the business, net of what it owes its suppliers. Enter as negative if this freed up cash instead.</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600">Cash Left Over to Repay Debt:</span>
+                                <span id="calc-fcf" class="font-bold">R 0</span>
+                            </div>
+                            <p class="text-[10px] text-gray-400 mt-1 italic">Profit minus tax, equipment costs and cash tied up in stock/bills. This is what's actually available to make loan payments.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-6 border border-gray-200">
+                    <h2 class="text-xl font-semibold mb-4 text-blue-800">Balance Sheet</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500">Loans Already Owed</label>
+                            <input type="number" id="raw-exist-debt" value="2000000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-3">
+                            <p class="text-[10px] text-gray-400 mt-1 italic">Total balance still owed on existing loans (not everyday supplier bills).</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500">Owner's Stake in the Business</label>
+                            <input type="number" id="raw-equity" value="8000000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-3">
+                            <p class="text-[10px] text-gray-400 mt-1 italic">What the business is worth after subtracting everything it owes — the owners' share.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 flex justify-end">
+                <button onclick="switchTab('tab-proposal')" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold shadow-lg hover:bg-blue-700">Next: Debt Proposal &rarr;</button>
+            </div>
+        </div>
+
+        <!-- Tab 2: Debt Proposal -->
+        <div id="tab-proposal" class="tab-content hidden">
+            <div class="max-w-2xl mx-auto card p-8 border border-gray-200">
+                <h2 class="text-2xl font-semibold mb-6 text-blue-800 border-b pb-2">Proposed Facility Details</h2>
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700">How Much They Want to Borrow</label>
+                            <div class="relative mt-1">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 font-bold">R</span>
+                                <input type="number" id="prop-amount" value="8000000" class="pl-8 block w-full rounded-md border-gray-300 shadow-sm border p-3 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700">How Long to Repay It (Months)</label>
+                            <input type="number" id="prop-term" value="60" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-3 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700">Interest Rate Charged (% per Year)</label>
+                            <input type="number" id="prop-rate" step="0.1" value="11.5" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-3 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700">Yearly Payments on Current Loans</label>
+                            <input type="number" id="prop-exist-service" value="500000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-3 focus:ring-blue-500">
+                            <p class="text-[10px] text-gray-400 mt-1">Total yearly repayments (loan amount + interest) already being made on existing loans.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-600">Total Debt After This Loan:</span>
+                            <span id="calc-total-debt" class="font-bold">R 0</span>
+                        </div>
+                    </div>
+
+                    <button onclick="evaluateAndShowResults()" class="w-full bg-green-600 text-white font-bold py-4 px-4 rounded-lg hover:bg-green-700 transition duration-200 shadow-lg">
+                        Generate Credit Benchmarking Analysis
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Results -->
+        <div id="tab-results" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Pro-Forma Ratios -->
+                <div class="card p-6 border border-gray-200 bg-slate-900 text-white">
+                    <h2 class="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">Calculated Pro-Forma Ratios</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-xs text-slate-400">Pro-Forma Debt : EBITDA</p>
+                            <p id="res-ebitda-mult" class="text-2xl font-bold">0.0x</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400">Pro-Forma Debt : FCF</p>
+                            <p id="res-debt-fcf" class="text-2xl font-bold">0.0x</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400">Pro-Forma Gearing (%)</p>
+                            <p id="res-gearing" class="text-2xl font-bold">0%</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400">Pro-Forma DSCR</p>
+                            <p id="res-dscr" class="text-2xl font-bold">0.0x</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Benchmarking Table -->
+                <div class="lg:col-span-2 card p-6 border border-gray-200">
+                    <h2 class="text-lg font-bold mb-4">Benchmark Comparison (Standard Market Norms)</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left">
+                            <thead class="bg-gray-100 border-b">
+                                <tr>
+                                    <th class="px-3 py-2">Criteria</th>
+                                    <th class="px-3 py-2 text-center">Senior (A)</th>
+                                    <th class="px-3 py-2 text-center">Senior (B)</th>
+                                    <th class="px-3 py-2 text-center">Mezzanine</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="recommendationCard" class="card p-6 border-l-8 border-gray-400">
+                <h3 class="text-lg font-bold mb-4 text-slate-800">Internal Credit Outlook</h3>
+                <div id="recommendationText" class="text-gray-700 text-sm leading-relaxed"></div>
+            </div>
+        </div>
+
+        <footer class="mt-12 text-center text-gray-400 text-xs italic">
+            Sources: MJT Consulting March 2026
+        </footer>
+    </div>
+
+    <script>
+        const BENCHMARKS = {
+            a_loan: { name: "Senior Term Debt (A Loans)", max_debt_ebitda: 2.0, max_debt_fcf: 2.5, min_dscr: 1.5, max_gearing: 150, term_range: [36, 60], pricing: "Prime + 1.20%", committee: "Credit Committee" },
+            b_loan: { name: "Senior Term Debt (B Loans)", max_debt_ebitda: 2.2, max_debt_fcf: 3.0, min_dscr: 1.3, max_gearing: 185, term_range: [60, 84], pricing: "Prime + 1.20% to Prime + 1.50%", committee: "Credit Committee" },
+            mezzanine: { name: "Subordinated Debt (Mezzanine)", max_debt_ebitda: 3.0, max_debt_fcf: 4.0, min_dscr: 1.1, max_gearing: 250, term_range: [60, 84], pricing: "Prime + 1.50% to Prime + 1.85%", committee: "Investment Committee" }
+        };
+
+        // Used when the proposal fails to clear even the most permissive (Mezzanine) tier.
+        const DECLINE = { name: "No Facility Meets Minimum Criteria", pricing: "N/A", committee: "Refer to Senior Credit / Restructuring" };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.querySelectorAll('nav button').forEach(b => {
+                b.classList.remove('tab-active');
+                b.classList.add('text-gray-500');
+            });
+            document.getElementById('btn-' + tabId).classList.add('tab-active');
+            document.getElementById('btn-' + tabId).classList.remove('text-gray-500');
+
+            // Update total debt display while typing
+            const exist = parseFloat(document.getElementById('raw-exist-debt').value) || 0;
+            const proposed = parseFloat(document.getElementById('prop-amount').value) || 0;
+            document.getElementById('calc-total-debt').innerText = 'R ' + (exist + proposed).toLocaleString();
+
+            updateFCFDisplay();
+        }
+
+        // FCF build-up: EBITDA less cash taxes, maintenance capex, and the increase in net working capital.
+        // This is "Cash Flow Available for Debt Service" (CFADS) — pre-financing, so it is a clean numerator
+        // for both DSCR (vs. total annual debt service) and Debt/FCF (vs. total debt).
+        function calculateFCF() {
+            const ebitda = parseFloat(document.getElementById('raw-ebitda').value) || 0;
+            const tax = parseFloat(document.getElementById('raw-tax').value) || 0;
+            const capex = parseFloat(document.getElementById('raw-capex').value) || 0;
+            const wc = parseFloat(document.getElementById('raw-wc').value) || 0;
+            return ebitda - tax - capex - wc;
+        }
+
+        function updateFCFDisplay() {
+            const fcfEl = document.getElementById('calc-fcf');
+            if (!fcfEl) return;
+            fcfEl.innerText = 'R ' + calculateFCF().toLocaleString();
+        }
+
+        function calculateRatios() {
+            const fcf = calculateFCF();
+            const ebitda = parseFloat(document.getElementById('raw-ebitda').value) || 0;
+            const existDebt = parseFloat(document.getElementById('raw-exist-debt').value) || 0;
+            const equity = parseFloat(document.getElementById('raw-equity').value) || 0;
+            const propAmount = parseFloat(document.getElementById('prop-amount').value) || 0;
+            const propTerm = parseFloat(document.getElementById('prop-term').value) || 1;
+            const propRate = (parseFloat(document.getElementById('prop-rate').value) || 0) / 100;
+            const existService = parseFloat(document.getElementById('prop-exist-service').value) || 0;
+
+            const totalDebt = existDebt + propAmount;
+
+            // Simple Annual Debt Service Calculation (Straight line principal + Year-1 interest on full balance)
+            const annualPrincipal = propAmount / (propTerm / 12);
+            const annualInterest = propAmount * propRate;
+            const totalAnnualService = annualPrincipal + annualInterest + existService;
+
+            return {
+                debtEbitda: totalDebt / (ebitda || 1),
+                debtFCF: totalDebt / (fcf || 1),
+                gearing: (totalDebt / (equity || 1)) * 100,
+                dscr: fcf / (totalAnnualService || 1),
+                term: propTerm,
+                fcf: fcf
+            };
+        }
+
+        // Generic pass/fail + target-text helpers, keyed off ratioKey so each criterion is checked
+        // against its OWN ratio (this replaces the earlier hardcoded branches that mistakenly
+        // reused the Debt:EBITDA value for the Gearing check).
+        function checkPass(c, bench) {
+            if (c.op === 'range') return ratiosGlobal.term >= bench.term_range[0] && ratiosGlobal.term <= bench.term_range[1];
+            if (c.op === '<=') return ratiosGlobal[c.ratioKey] <= bench[c.key];
+            if (c.op === '>=') return ratiosGlobal[c.ratioKey] >= bench[c.key];
+            return false;
+        }
+
+        function targetText(c, bench) {
+            if (c.op === 'range') return `${bench.term_range[0]}-${bench.term_range[1]}`;
+            if (c.op === '<=') return `≤${bench[c.key]}`;
+            if (c.op === '>=') return `≥${bench[c.key]}`;
+            return '';
+        }
+
+        let ratiosGlobal = null;
+
+        function evaluateAndShowResults() {
+            const ratios = calculateRatios();
+            ratiosGlobal = ratios;
+
+            // Update Tab 3 Labels
+            document.getElementById('res-ebitda-mult').innerText = ratios.debtEbitda.toFixed(2) + 'x';
+            document.getElementById('res-debt-fcf').innerText = ratios.debtFCF.toFixed(2) + 'x';
+            document.getElementById('res-gearing').innerText = ratios.gearing.toFixed(1) + '%';
+            document.getElementById('res-dscr').innerText = ratios.dscr.toFixed(2) + 'x';
+
+            const tableBody = document.getElementById('resultsBody');
+            tableBody.innerHTML = '';
+
+            const criteria = [
+                { label: 'Debt : EBITDA', key: 'max_debt_ebitda', op: '<=', ratioKey: 'debtEbitda', fmt: v => v.toFixed(2) + 'x' },
+                { label: 'Debt : FCF', key: 'max_debt_fcf', op: '<=', ratioKey: 'debtFCF', fmt: v => v.toFixed(2) + 'x' },
+                { label: 'DSCR', key: 'min_dscr', op: '>=', ratioKey: 'dscr', fmt: v => v.toFixed(2) + 'x' },
+                { label: 'Gearing (%)', key: 'max_gearing', op: '<=', ratioKey: 'gearing', fmt: v => v.toFixed(1) + '%' },
+                { label: 'Term (Months)', key: 'term_range', op: 'range', ratioKey: 'term', fmt: v => v + ' mo' }
+            ];
+
+            const score = { a_loan: 0, b_loan: 0, mezzanine: 0 };
+            const TOTAL_CRITERIA = criteria.length;
+
+            criteria.forEach(c => {
+                let row = `<tr class="border-b"><td class="px-3 py-2 font-medium">${c.label}</td>`;
+                ['a_loan', 'b_loan', 'mezzanine'].forEach(lk => {
+                    const bench = BENCHMARKS[lk];
+                    const pass = checkPass(c, bench);
+                    const disp = targetText(c, bench);
+
+                    if (pass) score[lk]++;
+                    row += `<td class="px-3 py-2 text-center text-[10px]"><span class="block text-gray-400">${disp}</span><span class="${pass?'benchmark-pass':'benchmark-fail'}">${pass?'✓':'✗'}</span></td>`;
+                });
+                tableBody.innerHTML += row + '</tr>';
+            });
+
+            // Final Rec Logic — must clear all but one of the 5 criteria for a tier; otherwise Decline.
+            let winner;
+            if (score.a_loan >= TOTAL_CRITERIA - 1) winner = 'a_loan';
+            else if (score.b_loan >= TOTAL_CRITERIA - 1) winner = 'b_loan';
+            else if (score.mezzanine >= TOTAL_CRITERIA - 1) winner = 'mezzanine';
+            else winner = 'decline';
+
+            const isDecline = winner === 'decline';
+            const choice = isDecline ? DECLINE : BENCHMARKS[winner];
+            // If declining, show the shortfall against Mezzanine — the most permissive tier — so the
+            // breakdown tells the credit team exactly how far off the deal is from the easiest hurdle.
+            const referenceBench = isDecline ? BENCHMARKS.mezzanine : choice;
+
+            const card = document.getElementById('recommendationCard');
+            const borderClass = winner === 'a_loan' ? 'border-green-500' : winner === 'b_loan' ? 'border-blue-500' : winner === 'mezzanine' ? 'border-orange-500' : 'border-red-600';
+            card.className = `card p-6 border-l-8 ${borderClass}`;
+
+            // Build Detailed Breakdown for Outlook
+            let breakdownHtml = `<div class="mt-4 space-y-2 border-t pt-4">`;
+            criteria.forEach(c => {
+                const pass = checkPass(c, referenceBench);
+                const target = targetText(c, referenceBench);
+                const displayVal = c.fmt(ratios[c.ratioKey]);
+
+                breakdownHtml += `
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-semibold text-gray-600">${c.label}:</span>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-gray-500 italic">Target: ${target}</span>
+                            <span class="font-bold w-16 text-right">${displayVal}</span>
+                            <span class="${pass ? 'text-green-600' : 'text-red-600'} font-bold w-4 text-center">${pass ? '✓' : '✗'}</span>
+                        </div>
+                    </div>`;
+            });
+            breakdownHtml += `</div>`;
+
+            const summaryText = isDecline
+                ? `<p class="font-medium text-red-700">The proposed facility of <strong>R ${parseFloat(document.getElementById('prop-amount').value).toLocaleString()}</strong> does not meet minimum benchmark criteria for any evaluated tranche (Senior A, Senior B, or Mezzanine). Recommend declining as structured, or restructuring the loan amount, term, or pricing. Shortfall below is shown against Mezzanine (the most permissive tier).</p>`
+                : `<p class="font-medium text-slate-800">The proposed facility of <strong>R ${parseFloat(document.getElementById('prop-amount').value).toLocaleString()}</strong> aligns most closely with <strong>${choice.name}</strong> norms.</p>`;
+
+            document.getElementById('recommendationText').innerHTML = `
+                ${summaryText}
+
+                <div class="grid grid-cols-2 mt-4 gap-4">
+                    <div class="p-3 bg-gray-50 rounded border border-gray-100">
+                        <span class="text-[10px] uppercase text-gray-400 font-bold">Indicative Pricing (Prime + Margin)</span><br>
+                        <span class="text-sm font-semibold">${choice.pricing}</span>
+                    </div>
+                    <div class="p-3 bg-gray-50 rounded border border-gray-100">
+                        <span class="text-[10px] uppercase text-gray-400 font-bold">Authority Level</span><br>
+                        <span class="text-sm font-semibold">${choice.committee}</span>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <h4 class="text-[10px] uppercase text-gray-400 font-bold mb-2 tracking-widest">Benchmark Hurdle Analysis (${isDecline ? 'vs. Mezzanine — Most Permissive Tier' : choice.name})</h4>
+                    ${breakdownHtml}
+                </div>
+            `;
+
+            switchTab('tab-results');
+        }
+
+        // Initialize computed displays on load
+        updateFCFDisplay();
+    </script>
+</body>
+</html>
