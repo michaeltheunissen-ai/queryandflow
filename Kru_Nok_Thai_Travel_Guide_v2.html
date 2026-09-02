@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>🇹🇭 Kru Nok Thai Travel Guide v2 | Tones + All Phrases</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #f4f9fb;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            color: #1a2c3e;
+            padding-bottom: 32px;
+            font-size: 18px;
+        }
+
+        .app-header {
+            background: #1e3a5f;
+            color: white;
+            text-align: center;
+            padding: 16px 12px;
+            position: sticky;
+            top: 0;
+            z-index: 120;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .app-header h1 {
+            font-size: 1.45rem;
+            font-weight: 650;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .search-section {
+            background: #ffffffea;
+            backdrop-filter: blur(8px);
+            padding: 12px 14px;
+            border-bottom: 1px solid #d9e2e8;
+            position: sticky;
+            top: 70px;
+            z-index: 110;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 1rem;
+            border: 1px solid #cbdde6;
+            border-radius: 50px;
+            background: white;
+            outline: none;
+            font-weight: 450;
+        }
+
+        .search-box:focus {
+            border-color: #d69e2e;
+            box-shadow: 0 0 0 3px rgba(214,158,46,0.25);
+        }
+
+        .tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            background: #eef3f7;
+            position: sticky;
+            top: 126px;
+            z-index: 105;
+            gap: 5px;
+            padding: 8px 6px 6px 6px;
+            border-bottom: 1px solid #d0dfe8;
+        }
+
+        .tab-label {
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 10px 10px;
+            border-radius: 32px 32px 16px 16px;
+            background: #e9f0f5;
+            color: #1f3b4c;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.3px;
+            user-select: none;
+            flex: 1 1 auto;
+            min-width: calc(25% - 5px);
+            white-space: nowrap;
+        }
+
+        @media (max-width: 480px) {
+            .tab-label {
+                font-size: 0.75rem;
+                padding: 9px 6px;
+                min-width: calc(33.33% - 5px);
+            }
+        }
+
+        .tab-label.active-1 { background: #FFEAD2; color: #a15507; border-bottom: 3px solid #f9a825; }
+        .tab-label.active-2 { background: #D9F0EC; color: #1f6d5c; border-bottom: 3px solid #2c9a7a; }
+        .tab-label.active-3 { background: #FFDDD6; color: #bc4e2c; border-bottom: 3px solid #e67e5c; }
+        .tab-label.active-4 { background: #E2F0D6; color: #3e6b2f; border-bottom: 3px solid #6f9e3f; }
+        .tab-label.active-5 { background: #D9E6F5; color: #1e5f8e; border-bottom: 3px solid #4a90c4; }
+        .tab-label.active-6 { background: #F7E2F0; color: #9b4b6e; border-bottom: 3px solid #d97aa8; }
+        .tab-label.active-7 { background: #FFF0CF; color: #ad7a2c; border-bottom: 3px solid #e5b652; }
+
+        .tab-content {
+            display: none;
+            padding: 20px 14px;
+            animation: fadeSlide 0.2s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(6px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        .phrase-card {
+            background: white;
+            border-radius: 26px;
+            margin-bottom: 24px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0,0,0,0.03);
+            border: 1px solid #e6edf2;
+        }
+
+        .card-header {
+            background: #fefcf5;
+            padding: 16px 18px;
+            font-weight: 750;
+            font-size: 1rem;
+            letter-spacing: 0.3px;
+            color: #2c5282;
+            border-left: 6px solid #d69e2e;
+            border-bottom: 1px solid #e9edf2;
+            text-transform: uppercase;
+        }
+
+        /* TONES EXPLANATION */
+        .tones-guide {
+            background: #F3F0E8;
+            border-radius: 24px;
+            padding: 18px 20px;
+            margin-bottom: 24px;
+            border-left: 6px solid #e9b35f;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .tones-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #b4652a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .tone-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .tone-item {
+            background: rgba(255,250,225,0.9);
+            flex: 1;
+            min-width: 90px;
+            border-radius: 36px;
+            padding: 8px 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .tone-symbol {
+            font-size: 1.3rem;
+            font-weight: 800;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        .tone-desc {
+            font-size: 0.75rem;
+            color: #6b4c2c;
+            margin-top: 4px;
+        }
+        .example-tone {
+            background: #fff7e8;
+            border-radius: 18px;
+            padding: 10px 14px;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            border: 1px solid #f7e5c2;
+        }
+
+        .vocab-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .vocab-table th, .vocab-table td {
+            padding: 14px 12px;
+            font-size: 0.98rem;
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: middle;
+        }
+
+        .vocab-table th {
+            background: #f8fafc;
+            font-weight: 700;
+            color: #1f3e58;
+            font-size: 0.9rem;
+        }
+
+        .thai-script {
+            font-size: 1.38rem;
+            font-weight: 570;
+            color: #1f6392;
+            display: block;
+            line-height: 1.45;
+            letter-spacing: 0.4px;
+            margin-bottom: 4px;
+        }
+
+        .phonetic {
+            font-size: 0.85rem;
+            color: #4f6f8f;
+            display: block;
+            font-weight: 500;
+            line-height: 1.3;
+        }
+
+        .eng-meaning {
+            color: #2c3e4e;
+            font-weight: 540;
+            font-size: 0.98rem;
+        }
+
+        .polite-note {
+            background: #FEF9E6;
+            border-left: 6px solid #f5b042;
+            padding: 14px 16px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #7b5e2c;
+        }
+
+        tr.hidden-row { display: none; }
+
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            color: #7a9ab5;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        @media (max-width: 550px) {
+            .tab-label { font-size: 0.69rem; padding: 8px 2px; }
+            .vocab-table td, .vocab-table th { padding: 12px 8px; }
+            .thai-script { font-size: 1.3rem; }
+            .tone-item { min-width: 70px; padding: 6px 8px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-header">
+    <h1>🇹🇭  Kru Nok Thai Travel Guide  •  Tones + All Phrases</h1>
+</div>
+
+<div class="search-section">
+    <input type="text" id="globalSearch" class="search-box" placeholder="🔍 Search within current tab (Thai / English / Phonetic)" oninput="filterCurrentTab()">
+</div>
+
+<div class="tab-nav" id="tabNav">
+    <div class="tab-label label1 active-1" onclick="switchTab(1)">🌟 Essentials</div>
+    <div class="tab-label label2" onclick="switchTab(2)">📍 Directions</div>
+    <div class="tab-label label3" onclick="switchTab(3)">🍜 Dining/Diet</div>
+    <div class="tab-label label4" onclick="switchTab(4)">⏰ Time/Days</div>
+    <div class="tab-label label5" onclick="switchTab(5)">📅 Months/Yr</div>
+    <div class="tab-label label6" onclick="switchTab(6)">🥘 Food/Kitchen</div>
+    <div class="tab-label label7" onclick="switchTab(7)">🗣️ Phrases/People</div>
+</div>
+
+<!-- ========= TAB 1 : ESSENTIALS + TONES ========= -->
+<div class="tab-content content1 active" id="content1">
+    <div class="tones-guide">
+        <div class="tones-title">🎵 Thai Tones — simple guide</div>
+        <p style="font-size: 0.88rem; line-height: 1.4; margin-bottom: 10px;">Thai is tonal: the same sound changes meaning by pitch. Just try your best! 😊</p>
+        <div class="tone-grid">
+            <div class="tone-item"><span class="tone-symbol">mid</span> 📘<div class="tone-desc">flat, normal voice</div><span style="font-size:0.7rem;">maa = come</span></div>
+            <div class="tone-item"><span class="tone-symbol">low</span> 📙<div class="tone-desc">deep, like grumbling</div><span style="font-size:0.7rem;">màa = dog</span></div>
+            <div class="tone-item"><span class="tone-symbol">falling</span> 📕<div class="tone-desc">high → drop down</div><span style="font-size:0.7rem;">mâa = horse</span></div>
+            <div class="tone-item"><span class="tone-symbol">high</span> 📗<div class="tone-desc">sharp, high pitch</div><span style="font-size:0.7rem;">máa = come? (polite)</span></div>
+            <div class="tone-item"><span class="tone-symbol">rising</span> 📒<div class="tone-desc">goes up like question</div><span style="font-size:0.7rem;">mǎa = shoulder</span></div>
+        </div>
+        <div class="example-tone">💡 <strong>Practice:</strong> "Mai" can mean <strong>new, burn, wood, not?, silk</strong> — tone changes everything! Marks like à, â, ǎ, á show tone.</div>
+    </div>
+    <div class="polite-note">💡 <strong>Polite tip:</strong> End with <strong>khrap</strong> (ครับ) male / <strong>kha</strong> (ค่ะ) female → respect.</div>
+    <div class="phrase-card"><div class="card-header">✨ Courtesy & Core Phrases</div>
+        <table class="vocab-table filterable"><thead><tr><th>🇹🇭 Thai & Pronunciation</th><th>🇬🇧 English</th></thead><tbody>
+            <tr><td><span class="thai-script">สวัสดี</span><span class="phonetic">sà-wàt-dee</span></td><td class="eng-meaning">Hello / Goodbye</td></tr>
+            <tr><td><span class="thai-script">ขอบคุณ</span><span class="phonetic">khàawp-khun</span></td><td class="eng-meaning">Thank you</td></tr>
+            <tr><td><span class="thai-script">ขอโทษ</span><span class="phonetic">khǎaw-thôot</span></td><td class="eng-meaning">Sorry / Excuse me</td></tr>
+            <tr><td><span class="thai-script">ไม่เป็นไร</span><span class="phonetic">mâi-bpen-rai</span></td><td class="eng-meaning">No problem / You're welcome</td></tr>
+            <tr><td><span class="thai-script">ใช่</span><span class="phonetic">châi</span></td><td class="eng-meaning">Yes</td></tr>
+            <tr><td><span class="thai-script">ไม่ใช่</span><span class="phonetic">mâi-châi</span></td><td class="eng-meaning">No</td></tr>
+            <tr><td><span class="thai-script">สบายดีไหม</span><span class="phonetic">sà-baai-dee măi?</span></td><td class="eng-meaning">How are you?</td></tr>
+            <tr><td><span class="thai-script">สบายดี</span><span class="phonetic">sà-baai-dee</span></td><td class="eng-meaning">I'm fine</td></tr>
+            <tr><td><span class="thai-script">พูดภาษาอังกฤษได้ไหม</span><span class="phonetic">phûut phaa-săa ang-grìt dâi măi?</span></td><td class="eng-meaning">Can you speak English?</td></tr>
+            <tr><td><span class="thai-script">ไม่เข้าใจ</span><span class="phonetic">mâi khâo-jai</span></td><td class="eng-meaning">I don't understand</td></tr>
+            <tr><td><span class="thai-script">พูดช้าๆ หน่อย</span><span class="phonetic">phûut cháa-cháa nòi</span></td><td class="eng-meaning">Speak slowly, please</td></tr>
+        </tbody></table>
+    </div>
+    <div class="phrase-card"><div class="card-header">🛍️ Questions & Shopping</div>
+        <table class="vocab-table filterable"><tbody>
+            <tr><td><span class="thai-script">...อยู่ที่ไหน</span><span class="phonetic">...yùu thîi-năi?</span></td><td class="eng-meaning">Where is ...?</td></tr>
+            <tr><td><span class="thai-script">นี่คืออะไร</span><span class="phonetic">nêe khue a-rai?</span></td><td class="eng-meaning">What is this?</td></tr>
+            <tr><td><span class="thai-script">เท่าไหร่</span><span class="phonetic">thâo-rài?</span></td><td class="eng-meaning">How much?</td></tr>
+            <tr><td><span class="thai-script">ราคาเท่าไหร่</span><span class="phonetic">raa-khâa thâo-rài?</span></td><td class="eng-meaning">How much does it cost?</td></tr>
+            <tr><td><span class="thai-script">แพงไป</span><span class="phonetic">phaeng bpai</span></td><td class="eng-meaning">Too expensive</td></tr>
+            <tr><td><span class="thai-script">ลดหน่อยได้ไหม</span><span class="phonetic">lót nòi dâi măi?</span></td><td class="eng-meaning">Can you give a discount?</td></tr>
+            <tr><td><span class="thai-script">เอาอันนี้</span><span class="phonetic">ao an-née</span></td><td class="eng-meaning">I'll take this one</td></tr>
+            <tr><td><span class="thai-script">มี...ไหม</span><span class="phonetic">mee ... măi?</span></td><td class="eng-meaning">Do you have...?</td></tr>
+        </tbody></table>
+    </div>
+</div>
+
+<!-- ========= TAB 2 : DIRECTIONS & TRANSPORT ========= -->
+<div class="tab-content content2" id="content2">
+    <div class="phrase-card"><div class="card-header">🧭 Navigation & Transport</div>
+        <table class="vocab-table filterable"><tbody>
+            <tr><td><span class="thai-script">เลี้ยวซ้าย</span><span class="phonetic">líao sáai</span></td><td class="eng-meaning">Turn left</td></tr>
+            <tr><td><span class="thai-script">เลี้ยวขวา</span><span class="phonetic">líao khwăa</span></td><td class="eng-meaning">Turn right</td></tr>
+            <tr><td><span class="thai-script">ตรงไป</span><span class="phonetic">trong bpai</span></td><td class="eng-meaning">Go straight</td></tr>
+            <tr><td><span class="thai-script">หยุด</span><span class="phonetic">yùt</span></td><td class="eng-meaning">Stop</td></tr>
+            <tr><td><span class="thai-script">ใกล้</span><span class="phonetic">glâi</span></td><td class="eng-meaning">Near</td></tr>
+            <tr><td><span class="thai-script">ไกล</span><span class="phonetic">glai</span></td><td class="eng-meaning">Far</td></tr>
+            <tr><td><span class="thai-script">ขับช้าๆ</span><span class="phonetic">khàp cháa-cháa</span></td><td class="eng-meaning">Drive slowly</td></tr>
+            <tr><td><span class="thai-script">เปิดมิเตอร์ด้วยครับ/คะ</span><span class="phonetic">bpèt mi-dter dûai khráp/ká</span></td><td class="eng-meaning">Please turn on meter</td></tr>
+        </tbody></table>
+    </div>
+    <div class="phrase-card"><div class="card-header">🏨 Destinations & Places</div>
+        <table class="vocab-table filterable"><tbody>
+            <tr><td><span class="thai-script">สนามบิน</span><span class="phonetic">sà-nǎam-bin</span></td><td class="eng-meaning">Airport</td></tr>
+            <tr><td><span class="thai-script">โรงแรม</span><span class="phonetic">roong-raem</span></td><td class="eng-meaning">Hotel</td></tr>
+            <tr><td><span class="thai-script">สถานีรถไฟ</span><span class="phonetic">sà-thǎa-nii rót-fai</span></td><td class="eng-meaning">Train station</td></tr>
+            <tr><td><span class="thai-script">ห้องน้ำ</span><span class="phonetic">hâwng-nám</span></td><td class="eng-meaning">Bathroom</td></tr>
+            <tr><td><span class="thai-script">ตลาด</span><span class="phonetic">dtà-làat</span></td><td class="eng-meaning">Market</td></tr>
+            <tr><td><span class="thai-script">โรงพยาบาล</span><span class="phonetic">roong-phá-yaa-baan</span></td><td class="eng-meaning">Hospital</td></tr>
+            <tr><td><span class="thai-script">ร้านขายยา</span><span class="phonetic">ráan khǎai yaa</span></td><td class="eng-meaning">Pharmacy</td></tr>
+            <tr><td><span class="thai-script">ซอย</span><span class="phonetic">soi</span></td><td class="eng-meaning">Alley / side street</td></tr>
+            <tr><td><span class="thai-script">ถนน</span><span class="phonetic">thà-nǒn</span></td><td class="eng-meaning">Road / Street</td></tr>
+        </tbody></table>
+    </div>
+</div>
+
+<!-- ========= TAB 3 : DINING & DIET ========= -->
+<div class="tab-content content3" id="content3">
+    <div class="phrase-card"><div class="card-header">🍽️ Ordering Food & Preferences</div>
+        <table class="vocab-table filterable"><tbody>
+            <tr><td><span class="thai-script">หิว</span><span class="phonetic">hǐw</span></td><td class="eng-meaning">Hungry</td></tr>
+            <tr><td><span class="thai-script">สั่งอาหารครับ/คะ</span><span class="phonetic">sàng aa-hǎan khráp/ká</span></td><td class="eng-meaning">I'd like to order</td></tr>
+            <tr><td><span class="thai-script">ไม่เผ็ด</span><span class="phonetic">mâi phèt</span></td><td class="eng-meaning">Not spicy</td></tr>
+            <tr><td><span class="thai-script">เผ็ดนิดหน่อย</span><span class="phonetic">phèt nít nòi</span></td><td class="eng-meaning">A little spicy</td></tr>
+            <tr><td><span class="thai-script">อร่อยมาก</span><span class="phonetic">a-ròi mâak</span></td><td class="eng-meaning">Delicious!</td></tr>
+            <tr><td><span class="thai-script">น้ำเปล่า</span><span class="phonetic">náam bplào</span></td><td class="eng-meaning">Plain water</td></tr>
+            <tr><td><span class="thai-script">น้ำแข็ง</span><span class="phonetic">náam khǎeng</span></td><td class="eng-meaning">Ice</td></tr>
+            <tr><td><span class="thai-script">เช็คบิล/เก็บเงินด้วย</span><span class="phonetic">chék bin / gèp ngern dûai</span></td><td class="eng-meaning">Bill please</td></tr>
+        </tbody></table>
+    </div>
+    <div class="phrase-card"><div class="card-header">🌱 Plant-Based & Dietary Needs</div>
+        <table class="vocab-table filterable"><tbody>
+            <tr><td><span class="thai-script">กินเจ</span><span class="phonetic">kin jay</span></td><td class="eng-meaning">Strict vegan (no garlic/onion/meat)</td></tr>
+            <tr><td><span class="thai-script">มังสวิรัติ</span><span class="phonetic">mang-sà-wí-rát</span></td><td class="eng-meaning">Vegetarian</td></tr>
+            <tr><td><span class="thai-script">ไม่ใส่เนื้อสัตว์</span><span class="phonetic">mâi sài núea-sàt</span></td><td class="eng-meaning">No meat</td></tr>
+            <tr><td><span class="thai-script">ไม่ใส่น้ำปลา</span><span class="phonetic">mâi sài nám-bplaa</span></td><td class="eng-meaning">No fish sauce</td></tr>
+            <tr><td><span class="thai-script">ไม่ใส่ไข่</span><span class="phonetic">mâi sài khài</span></td><td class="eng-meaning">No eggs</td></tr>
+            <tr><td><span class="thai-script">ไม่ใส่ผงชูรส</span><span class="phonetic">mâi sài phǒng choo-rót</span></td><td class="eng-meaning">No MSG</td></tr>
+            <tr><td><span class="thai-script">ไม่ใส่นม</span><span class="phonetic">mâi sài nom</span></td><td class="eng-meaning">No dairy / milk</td></tr>
+        </tbody></table>
+    </div>
+</div>
+
+<!-- ========= TAB 4 : TIME & DAYS ========= -->
+<div class="tab-content content4" id="content4">
+    <div class="phrase-card"><div class="card-header">⏲️ Time & General Terms</div>
+        <table class="vocab-table filterable"><tbody>
+            <tr><td><span class="thai-script">ตอนนี้</span><span class="phonetic">dton-nee</span></td><td class="eng-meaning">Now</td></tr>
+            <tr><td><span class="thai-script">วันนี้</span><span class="phonetic">wan-nee</span></td><td class="eng-meaning">Today</td></tr>
+            <tr><td><span class="thai-script">พรุ่งนี้</span><span class="phonetic">phrûng-níi</span></td><td class="eng-meaning">Tomorrow</td></tr>
+            <tr><td><span class="thai-script">เมื่อวาน</span><span class="phonetic">mûea-waan</span></td><td class="eng-meaning">Yesterday</td></tr>
+            <tr><td><span class="thai-script">เที่ยง</span><span class="phonetic">thîang</span></td><td class="eng-meaning">Noon</td></tr>
+            <tr><td><span class="thai-script">ตอนเย็น</span><span class="phonetic">dton-yen</span></td><td class="eng-meaning">Evening</td></tr>
+            <tr><td><span class="thai-script">ตอนเช้า</span><span class="phonetic">dton-cháo</span></td><td class="eng-meaning">Morning</td></tr>
+            <tr><td><span class="thai-script">เที่ยงคืน</span><span class="phonetic">thîang-khuen</span></td><td class="eng-meaning">Midnight</td></tr>
+            <tr><td><span class="thai-script">นาที</span><span class="phonetic">naa-thee</span></td><td class="eng-meaning">Minute</td></tr>
+            <tr><td><span class="thai-script">ชั่วโมง</span><span class="phonetic">chûa-mong</span></td><td class="eng-meaning">Hour</td></tr>
+        </tbody></table>
+    </div>
+    <div class="phrase-card"><div class="card-header">📆 Days of the Week</div>
+        <table class="vocab-table filterable"><tbody>
+            <tr><td><span class="thai-script">วันจันทร์</span><span class="phonetic">wan jan</span></td><td class="eng-meaning">Monday</td></tr>
+            <tr><td><span class="thai-script">วันอังคาร</span><span class="phonetic">wan ang-khaan</span></td><td class="eng-meaning">Tuesday</td></tr>
+            <tr><td><span class="thai-script">วันพุธ</span><span class="phonetic">wan phút</span></td><td class="eng-meaning">Wednesday</td></tr>
+            <tr><td><span class="thai-script">วันพฤหัสบดี</span><span class="phonetic">wan phrá-hàt</span></td><td class="eng-meaning">Thursday</td></tr>
+            <tr><td><span class="thai-script">วันศุกร์</span><span class="phonetic">wan sùk</span></td><td class="eng-meaning">Friday</td></tr>
+            <tr><td><span class="thai-script">วันเสาร์</span><span class="phonetic">wan sǎo</span></td><td class="eng-meaning">Saturday</td></tr>
+            <tr><td><span class="thai-script">วันอาทิตย์</span><span class="phonetic">wan aa-thít</span></td><td class="eng-meaning">Sunday</td></tr>
+            <tr><td><span class="thai-script">สุดสัปดาห์</span><span class="phonetic">sùt sàp-daa</span></td><td class="eng-meaning">Weekend</td></tr>
+            <tr><td><span class="thai-script">อาทิตย์หน้า</span><span class="phonetic">aa-thít nâa</span></td><td class="eng-meaning">Next week</td></tr>
+        </tbody></table>
+    </div>
+</div>
+
+<!-- ========= TAB 5 : MONTHS & YEARS ========= -->
+<div class="tab-content content5" id="content5">
+    <div class="phrase-card"><div class="card-header">📅 Months & Years</div>
+        <table class="vocab-table filterable"><tbody>
+            <tr><td><span class="thai-script">เดือนที่แล้ว</span><span class="phonetic">duan thîi láew</span></td><td class="eng-meaning">Last month</td></tr>
+            <tr><td><span class="thai-script">เดือนนี้</span><span class="phonetic">duan née</span></td><td class="eng-meaning">This month</td></tr>
+            <tr><td><span class="thai-script">เดือนหน้า</span><span class="phonetic">duan nâa</span></td><td class="eng-meaning">Next month</td></tr>
+            <tr><td><span class="thai-script">ปีที่แล้ว</span><span class="phonetic">pee thîi láew</span></td><td class="eng-meaning">Last year</td></tr>
+            <tr><td><span class="thai-script">ปีนี้</span><span class="phonetic">pee née</span></td><td class="eng-meaning">This year</td></tr>
+            <tr><td><span class="thai-script">ปีหน้า</span><span class="phonetic">pee nâa</span></td><td class="eng-meaning">Next year</td></tr>
+            <tr><td><span class="thai-script">มกราคม</span><span class="phonetic">mók-ka-raa-khom</span></td><td class="eng-meaning">January</td></tr>
+            <tr><td><span class="thai-script">กุมภาพันธ์</span><span class="phonetic">kum-phaa-phan</span></td><td class="eng-meaning">February</td></tr>
+            <tr><td><span class="thai-script">มีนาคม</span><span class="phonetic">mee-naa-khom</span></td><td class="eng-meaning">March</td></tr>
+            <tr><td><span class="thai-script">เมษายน</span><span class="phonetic">may-sǎa-yon</span></td><td class="eng-meaning">April</td></tr>
+            <tr><td><span class="thai-script">พฤษภาคม</span><span class="phonetic">phrúet-sà-phaa-khom</span></td><td class="eng-meaning">May</td></tr>
+            <tr><td><span class="thai-script">มิถุนายน</span><span class="phonetic">mí-thù-naa-yon</span></td><td class="eng-meaning">June</td></tr>
+            <tr><td><span class="thai-script">กรกฎาคม</span><span class="phonetic">gà-rá-gà-daa-khom</span></td><td class="eng-meaning">July</td></tr>
+            <tr><td><span class="thai-script">สิงหาคม</span><span class="phonetic">sǐng-hǎa-khom</span></td><td class="eng-meaning">August</td></tr>
+            <tr><td><span class="thai-script">กันยายน</span><span class="phonetic">gan-yaa-yon</span></td><td class="eng-meaning">September</td></tr>
+            <tr><td><span class="thai-script">ตุลาคม</span><span class="phonetic">dtù-laa-khom</span></td><td class="eng-meaning">October</td></tr>
+            <tr><td><span class="thai-script">พฤศจิกายน</span><span class="phonetic">phrút-sà-jì-gaa-yon</span></td><td class="eng-meaning">November</td></tr>
+            <tr><td><span class="thai-script">ธันวาคม</span><span class="phonetic">than-waa-khom</span></td><td class="eng-meaning">December</td></tr>
+        </tbody></table>
+    </div>
+    <div class="phrase-card"><div class="card-header">🗓️ Seasons & Festivals</div>
+        <table class="vocab-table filterable"><tbody>
+            <tr><td><span class="thai-script">ฤดูร้อน</span><span class="phonetic">rú-duu rón</span></td><td class="eng-meaning">Hot season (Mar–Jun)</td></tr>
+            <tr><td><span class="thai-script">ฤดูฝน</span><span class="phonetic">rú-duu fǒn</span></td><td class="eng-meaning">Rainy season (Jul–Oct)</td></tr>
+            <tr><td><span class="thai-script">ฤดูหนาว</span><span class="phonetic">rú-duu nǎao</span></td><td class="eng-meaning">Cool season (Nov–Feb)</td></tr>
+            <tr><td><span class="thai-script">สงกรานต์</span><span class="phonetic">sǒng-graan</span></td><td class="eng-meaning">Thai New Year / Water Festival (Apr)</td></tr>
+            <tr><td><span class="thai-script">ลอยกระทง</span><span class="phonetic">loi grà-tong</span></td><td class="eng-meaning">Loy Krathong festival (Nov)</td></tr>
+        </tbody></table>
+    </div>
+</div>
+
+<!-- ========= TAB 6 : FOOD & KITCHEN ========= -->
+<div class="tab-content content6" id="content6">
+    <div class="phrase-card"><div class="card-header">🍚 Common Thai Dishes</div>
+        <table class="vocab-table filterable"><tbody>
+            <tr><td><span class="thai-script">ผัดไทย</span><span class="phonetic">phàt thai</span></td><td class="eng-meaning">Pad Thai noodles</td></tr>
+            <tr><td><span class="thai-script">ต้มยำกุ้ง</span><span class="phonetic">dtôm yam gûng</span></td><td class="eng-meaning">Tom Yum prawn soup</td></tr>
+            <tr><td><span class="thai-script">แกงเขียวหวาน</span><span class="phonetic">gaeng khǐao wǎan</span></td><td class="eng-meaning">Green curry</td></tr>
+            <tr><td><span class="thai-script">แกงแดง</span><span class="phonetic">gaeng daeng</span></td><td class="eng-meaning">Red curry</td></tr>
+            <tr><td><span class="thai-script">ข้าวผัด</span><span class="phonetic">kâao phàt</span></td><td class="eng-meaning">Fried rice</td></tr>
+            <tr><td><span class="thai-script">ส้มตำ</span><span class="phonetic">sôm dtam</span></td><td class="eng-meaning">Green papaya salad</td></tr>
+            <tr><td><span class="thai-script">ไก่ย่าง</span><span class="phonetic">gài yâang</span></td><td class="eng-meaning">Grilled chicken</td></tr>
+            <tr><td><span class="thai-script">ข้าวมันไก่</span><span class="phonetic">kâao man gài</span></td><td class="eng-meaning">Chicken rice (Hainanese)</td></tr>
+            <tr><td><span class="thai-script">ผัดกะเพรา</span><span class="phonetic">phàt gà-phrao</span></td><td class="eng-meaning">Basil stir-fry</td></tr>
+            <tr><td><span class="thai-script">มะม่วงข้าวเหนียว</span><span class="phonetic">má-mûang kâao nǐao</span></td><td class="eng-meaning">Mango sticky rice</td></tr>
+        </tbody></table>
+    </div>
+    <div class="phrase-card"><div class="card-header">🧂 Ingredients & Kitchen Words</div>
+        <table class="vocab-table filterable"><tbody>
+            <tr><td><span class="thai-script">ข้าว</span><span class="phonetic">kâao</span></td><td class="eng-meaning">Rice</td></tr>
+            <tr><td><span class="thai-script">ก๋วยเตี๋ยว</span><span class="phonetic">gǔay dtǐao</span></td><td class="eng-meaning">Noodles</td></tr>
+            <tr><td><span class="thai-script">หมู</span><span class="phonetic">mǔu</span></td><td class="eng-meaning">Pork</td></tr>
+            <tr><td><span class="thai-script">ไก่</span><span class="phonetic">gài</span></td><td class="eng-meaning">Chicken</td></tr>
+            <tr><td><span class="thai-script">เนื้อวัว</span><span class="phonetic">núea wua</span></td><td class="eng-meaning">Beef</td></tr>
+            <tr><td><span class="thai-script">กุ้ง</span><span class="phonetic">gûng</span></td><td class="eng-meaning">Shrimp / prawn</td></tr>
+            <tr><td><span class="thai-script">ปลา</span><span class="phonetic">bplaa</span></td><td class="eng-meaning">Fish</td></tr>
+            <tr><td><span class="thai-script">ผัก</span><span class="phonetic">phàk</span></td><td class="eng-meaning">Vegetables</td></tr>
+            <tr><td><span class="thai-script">พริก</span><span class="phonetic">phrík</span></td><td class="eng-meaning">Chilli</td></tr>
+            <tr><td><span class="thai-script">กระเทียม</span><span class="phonetic">grà-thiam</span></td><td class="eng-meaning">Garlic</td></tr>
+            <tr><td><span class="thai-script">มะนาว</span><span class="phonetic">má-naao</span></td><td class="eng-meaning">Lime</td></tr>
+            <tr><td><span class="thai-script">น้ำตาล</span><span class="phonetic">náam dtaan</span></td><td class="eng-meaning">Sugar</td></tr>
+            <tr><td><span class="thai-script">เกลือ</span><span class="phonetic">glua</span></td><td class="eng-meaning">Salt</td></tr>
+            <tr><td><span class="thai-script">น้ำมัน</span><span class="phonetic">náam man</span></td><td class="eng-meaning">Oil</td></tr>
+        </tbody></table>
+    </div>
+    <div class="phrase-card"><div class="card-header">🥤 Drinks</div>
+        <table class="vocab-table filterable"><tbody>
+            <tr><td><span class="thai-script">ชาเย็น</span><span class="phonetic">chaa yen</span></td><td class="eng-meaning">Thai iced tea</td></tr>
+            <tr><td><span class="thai-script">กาแฟ</span><span class="phonetic">gaa-fae</span></td><td class="eng-meaning">Coffee</td></tr>
+            <tr><td><span class="thai-script">น้ำผลไม้</span><span class="phonetic">náam phǒn-lá-máai</span></td><td class="eng-meaning">Fruit juice</td></tr>
+            <tr><td><span class="thai-script">เบียร์</span><span class="phonetic">bia</span></td><td class="eng-meaning">Beer</td></tr>
+            <tr><td><span class="thai-script">ไม่หวาน</span><span class="phonetic">mâi wǎan</span></td><td class="eng-meaning">Not sweet / no sugar</td></tr>
+            <tr><td><span class="thai-script">หวานน้อย</span><span class="phonetic">wǎan nói</span></td><td class="eng-meaning">Less sweet</td></tr>
+        </tbody></table>
+    </div>
+</div>
+
+<!-- ========= TAB 7 : PHRASES & PEOPLE ========= -->
+<div class="tab-content content7" id="content7">
+    <div class="phrase-card"><div class="card-header">👥 People & Pronouns</div>
+        <table class="vocab-table filterable"><tbody>
+            <tr><td><span class="thai-script">ผม</span><span class="phonetic">phǒm</span></td><td class="eng-meaning">I / me (male)</td></tr>
+            <tr><td><span class="thai-script">ฉัน / หนู</span><span class="phonetic">chǎn / nǔu</span></td><td class="eng-meaning">I / me (female)</td></tr>
+            <tr><td><span class="thai-script">คุณ</span><span class="phonetic">khun</span></td><td class="eng-meaning">You (polite)</td></tr>
+            <tr><td><span class="thai-script">เขา</span><span class="phonetic">khǎo</span></td><td class="eng-meaning">He / She / They</td></tr>
+            <tr><td><span class="thai-script">เรา</span><span class="phonetic">rao</span></td><td class="eng-meaning">We / Us / I (casual)</td></tr>
+            <tr><td><span class="thai-script">พวกเขา</span><span class="phonetic">phûak khǎo</span></td><td class="eng-meaning">They / Them</td></tr>
+            <tr><td><span class="thai-script">ฝรั่ง</span><span class="phonetic">fà-ràng</span></td><td class="eng-meaning">Westerner / foreigner</td></tr>
+            <tr><td><span class="thai-script">เพื่อน</span><span class="phonetic">phûean</span></td><td class="eng-meaning">Friend</td></tr>
+        </tbody></table>
+    </div>
+    <div class="phrase-card"><div class="card-header">💬 Social & Useful Expressions</div>
+        <table class="vocab-table filterable"><tbody>
+            <tr><td><span class="thai-script">ไม่เป็นไร</span><span class="phonetic">mâi bpen rai</span></td><td class="eng-meaning">Never mind / It's okay</td></tr>
+            <tr><td><span class="thai-script">เดี๋ยวนะ</span><span class="phonetic">dǐao ná</span></td><td class="eng-meaning">Wait a moment</td></tr>
+            <tr><td><span class="thai-script">รอแป๊บนึง</span><span class="phonetic">ror bpaep neung</span></td><td class="eng-meaning">Wait just a second</td></tr>
+            <tr><td><span class="thai-script">ช่วยด้วย</span><span class="phonetic">chûai dûai</span></td><td class="eng-meaning">Help me please!</td></tr>
+            <tr><td><span class="thai-script">โทรตำรวจ</span><span class="phonetic">thoh dtam-rùat</span></td><td class="eng-meaning">Call the police</td></tr>
+            <tr><td><span class="thai-script">หมอ</span><span class="phonetic">mǎaw</span></td><td class="eng-meaning">Doctor</td></tr>
+            <tr><td><span class="thai-script">เจ็บ / เจ็บปวด</span><span class="phonetic">jèp / jèp bpùat</span></td><td class="eng-meaning">It hurts / pain</td></tr>
+            <tr><td><span class="thai-script">หาย</span><span class="phonetic">hǎai</span></td><td class="eng-meaning">Lost / missing / recovered</td></tr>
+            <tr><td><span class="thai-script">แผนที่</span><span class="phonetic">phǎen-thîi</span></td><td class="eng-meaning">Map</td></tr>
+            <tr><td><span class="thai-script">สนุก</span><span class="phonetic">sà-nùk</span></td><td class="eng-meaning">Fun!</td></tr>
+            <tr><td><span class="thai-script">สวย / หล่อ</span><span class="phonetic">sǔai / lòr</span></td><td class="eng-meaning">Beautiful (f) / Handsome (m)</td></tr>
+        </tbody></table>
+    </div>
+    <div class="phrase-card"><div class="card-header">🔢 Numbers</div>
+        <table class="vocab-table filterable"><tbody>
+            <tr><td><span class="thai-script">หนึ่ง</span><span class="phonetic">nèung</span></td><td class="eng-meaning">1</td></tr>
+            <tr><td><span class="thai-script">สอง</span><span class="phonetic">sǎwng</span></td><td class="eng-meaning">2</td></tr>
+            <tr><td><span class="thai-script">สาม</span><span class="phonetic">sǎam</span></td><td class="eng-meaning">3</td></tr>
+            <tr><td><span class="thai-script">สี่</span><span class="phonetic">sìi</span></td><td class="eng-meaning">4</td></tr>
+            <tr><td><span class="thai-script">ห้า</span><span class="phonetic">hâa</span></td><td class="eng-meaning">5</td></tr>
+            <tr><td><span class="thai-script">หก</span><span class="phonetic">hòk</span></td><td class="eng-meaning">6</td></tr>
+            <tr><td><span class="thai-script">เจ็ด</span><span class="phonetic">jèt</span></td><td class="eng-meaning">7</td></tr>
+            <tr><td><span class="thai-script">แปด</span><span class="phonetic">bpàet</span></td><td class="eng-meaning">8</td></tr>
+            <tr><td><span class="thai-script">เก้า</span><span class="phonetic">gâo</span></td><td class="eng-meaning">9</td></tr>
+            <tr><td><span class="thai-script">สิบ</span><span class="phonetic">sìp</span></td><td class="eng-meaning">10</td></tr>
+            <tr><td><span class="thai-script">ยี่สิบ</span><span class="phonetic">yîi-sìp</span></td><td class="eng-meaning">20</td></tr>
+            <tr><td><span class="thai-script">ร้อย</span><span class="phonetic">rói</span></td><td class="eng-meaning">100</td></tr>
+            <tr><td><span class="thai-script">พัน</span><span class="phonetic">phan</span></td><td class="eng-meaning">1,000</td></tr>
+        </tbody></table>
+    </div>
+</div>
+
+<script>
+    let activeTab = 1;
+
+    function updateStickyOffsets() {
+        const header = document.querySelector('.app-header');
+        const search = document.querySelector('.search-section');
+        const nav    = document.querySelector('.tab-nav');
+
+        const headerH = header.offsetHeight;
+        const searchH = search.offsetHeight;
+
+        search.style.top = headerH + 'px';
+        nav.style.top    = (headerH + searchH) + 'px';
+    }
+
+    window.addEventListener('load', updateStickyOffsets);
+    window.addEventListener('resize', updateStickyOffsets);
+
+    function switchTab(n) {
+        document.getElementById('content' + activeTab).classList.remove('active');
+        const oldLabel = document.querySelector('.label' + activeTab);
+        oldLabel.className = 'tab-label label' + activeTab;
+
+        activeTab = n;
+        document.getElementById('content' + n).classList.add('active');
+        const newLabel = document.querySelector('.label' + n);
+        newLabel.classList.add('active-' + n);
+
+        document.getElementById('globalSearch').value = '';
+        clearFilter();
+
+        updateStickyOffsets();
+    }
+
+    function filterCurrentTab() {
+        const query = document.getElementById('globalSearch').value.trim().toLowerCase();
+        const activeContent = document.getElementById('content' + activeTab);
+        const tables = activeContent.querySelectorAll('table.filterable tbody');
+
+        tables.forEach(tbody => {
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => {
+                if (!query) {
+                    row.classList.remove('hidden-row');
+                    return;
+                }
+                const text = row.textContent.toLowerCase();
+                row.classList.toggle('hidden-row', !text.includes(query));
+            });
+        });
+    }
+
+    function clearFilter() {
+        const activeContent = document.getElementById('content' + activeTab);
+        activeContent.querySelectorAll('tr.hidden-row').forEach(r => r.classList.remove('hidden-row'));
+    }
+</script>
+
+</body>
+</html>
