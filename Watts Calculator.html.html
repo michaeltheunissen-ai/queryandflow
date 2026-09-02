@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed Running Power Calculator</title>
+    <style>
+        :root { --primary: #00d2be; --bg: #121212; --surface: #1e1e1e; --text: #e0e0e0; --border: #333; }
+        body { font-family: sans-serif; background-color: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; }
+        .container { background-color: var(--surface); padding: 30px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { color: var(--primary); text-align: center; font-weight: 300; }
+        .input-group { display: flex; flex-direction: column; margin-bottom: 15px; }
+        label { font-size: 0.85rem; margin-bottom: 5px; color: #aaa; }
+        input { background: #2a2a2a; border: 1px solid var(--border); padding: 10px; color: white; border-radius: 6px; }
+        button { width: 100%; padding: 15px; background: var(--primary); color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; margin-top: 10px; }
+        #results { margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; display: none; }
+        .main-result { font-size: 3.5rem; font-weight: 800; line-height: 1; }
+        .main-unit { color: var(--primary); margin-bottom: 10px; }
+        .stats { display: flex; justify-content: space-around; margin-top: 20px; }
+        .stat-box { background: #252525; padding: 10px; border-radius: 8px; flex: 1; margin: 0 5px; }
+        .stat-label { font-size: 0.7rem; color: #888; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Run Power Calc</h1>
+    
+    <div class="input-group">
+        <label>Body Weight (kg)</label>
+        <input type="number" id="weight" value="67">
+    </div>
+    <div class="input-group">
+        <label>Distance (km)</label>
+        <input type="number" id="distance" value="21.1">
+    </div>
+    <div class="input-group">
+        <label>Time (hh:mm:ss)</label>
+        <input type="text" id="time" value="02:06:00">
+    </div>
+    <div class="input-group">
+        <label>Gradient (%)</label>
+        <input type="number" id="gradient" value="1">
+    </div>
+    <div class="input-group">
+        <label>Cadence (Steps per min)</label>
+        <input type="number" id="cadence" value="170">
+    </div>
+
+    <button onclick="calculatePower()">Calculate Watts</button>
+
+    <div id="results">
+        <div class="main-result" id="res-watts">0</div>
+        <div class="main-unit">MECHANICAL WATTS</div>
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">Pace</div>
+                <div id="res-pace">0:00</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">W/kg</div>
+                <div id="res-wkg">0.0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Step Length</div>
+                <div id="res-step">0.0m</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculatePower() {
+        const weight = parseFloat(document.getElementById('weight').value);
+        const distKm = parseFloat(document.getElementById('distance').value);
+        const grad = parseFloat(document.getElementById('gradient').value) / 100;
+        const cad = parseFloat(document.getElementById('cadence').value);
+        
+        // Parse Time String
+        const timeParts = document.getElementById('time').value.split(':').map(Number);
+        const secs = (timeParts[0] * 3600) + (timeParts[1] * 60) + timeParts[2];
+        
+        const speedMs = (distKm * 1000) / secs;
+        
+        /**
+         * THE MECHANICAL FORMULA (Validated against Stryd/Coros)
+         * Running power = (Horizontal Power) + (Vertical Power)
+         * Horizontal: Approx 1.04 Watts per kg per (m/s)
+         * Vertical: m * g * velocity * gradient
+         */
+        
+        // 1. Horizontal Component (Running Economy constant)
+        const horizontalPower = weight * speedMs * 1.04;
+        
+        // 2. Vertical/Gravity Component
+        const verticalPower = weight * 9.81 * speedMs * grad;
+        
+        // 3. Cadence Efficiency adjustment
+        // Higher cadence (180+) is more efficient. 170 adds a tiny ~1% penalty for oscillation.
+        const cadenceAdj = cad < 180 ? 1 + ((180 - cad) * 0.001) : 1;
+
+        const totalMechanicalWatts = (horizontalPower + verticalPower) * cadenceAdj;
+
+        // UI Updates
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('res-watts').innerText = Math.round(totalMechanicalWatts);
+        document.getElementById('res-wkg').innerText = (totalMechanicalWatts / weight).toFixed(2);
+        
+        const paceSec = Math.round(secs / distKm);
+        document.getElementById('res-pace').innerText = Math.floor(paceSec/60) + ":" + (paceSec%60).toString().padStart(2,'0');
+        document.getElementById('res-step').innerText = ((speedMs * 60) / cad).toFixed(2) + "m";
+    }
+</script>
+</body>
+</html>
