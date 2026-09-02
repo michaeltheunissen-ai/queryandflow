@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legacy-Style Financial Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        body {
+            background-color: #0f172a;
+            font-family: 'JetBrains+Mono', monospace;
+        }
+
+        .cobol-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        }
+
+        .cobol-input {
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: #38bdf8;
+            padding: 0.75rem;
+            width: 100%;
+            border-radius: 4px;
+        }
+
+        .cobol-input:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+
+        .terminal-header {
+            background: #334155;
+            padding: 0.5rem 1rem;
+            color: #cbd5e1;
+            font-size: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .btn-calc {
+            background: #0ea5e9;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .btn-calc:hover {
+            background: #0284c7;
+            transform: translateY(-1px);
+        }
+
+        .result-box {
+            background: rgba(15, 23, 42, 0.5);
+            border-left: 4px solid #38bdf8;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md">
+        <div class="terminal-header">
+            <span>COBOL_FV_ENGINE.EXE</span>
+            <div class="flex gap-1">
+                <div class="w-3 h-3 rounded-full bg-slate-500"></div>
+                <div class="w-3 h-3 rounded-full bg-slate-500"></div>
+                <div class="w-3 h-3 rounded-full bg-slate-500"></div>
+            </div>
+        </div>
+        
+        <div class="cobol-card p-6 rounded-b-lg">
+            <h1 class="text-xl font-bold text-slate-100 mb-6 border-b border-slate-700 pb-2">
+                FUTURE VALUE CALCULATOR
+            </h1>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-400 uppercase mb-1">Principal Amount</label>
+                    <input type="number" id="principal" value="1000" class="cobol-input text-lg" placeholder="Enter capital...">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-slate-400 uppercase mb-1">Annual Interest Rate (%)</label>
+                    <input type="number" id="rate" value="5.5" step="0.1" class="cobol-input text-lg" placeholder="Enter rate...">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-slate-400 uppercase mb-1">Duration (Years)</label>
+                    <input type="number" id="years" value="10" class="cobol-input text-lg" placeholder="Enter years...">
+                </div>
+
+                <button onclick="calculateFV()" class="w-full py-3 rounded btn-calc font-bold uppercase tracking-wider mt-4">
+                    Run Calculation
+                </button>
+            </div>
+
+            <div id="resultArea" class="mt-8 hidden">
+                <div class="result-box p-4">
+                    <p class="text-xs text-slate-400 uppercase mb-1">Projected Future Value</p>
+                    <p id="fvOutput" class="text-3xl font-bold text-sky-400">0.00</p>
+                    
+                    <div class="mt-4 pt-4 border-t border-slate-700 text-xs text-slate-500">
+                        <p>Principal: <span id="pRef" class="text-slate-300"></span></p>
+                        <p>Total Interest: <span id="intRef" class="text-emerald-400"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-center text-slate-600 text-[10px] mt-4 uppercase tracking-tighter">
+            System Logic: COBOL-74 Equivalent | Annual Compounding Engine
+        </p>
+    </div>
+
+    <script>
+        function calculateFV() {
+            const p = parseFloat(document.getElementById('principal').value);
+            const r = parseFloat(document.getElementById('rate').value) / 100;
+            const n = parseInt(document.getElementById('years').value);
+
+            if (isNaN(p) || isNaN(r) || isNaN(n)) {
+                return;
+            }
+
+            // The Compound Interest Formula: FV = P * (1 + r)^n
+            const fv = p * Math.pow((1 + r), n);
+            const totalInterest = fv - p;
+
+            // Generic Numeric Formatting (2 decimal places, comma separators)
+            const formatNum = (num) => {
+                return num.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            };
+
+            document.getElementById('fvOutput').textContent = formatNum(fv);
+            document.getElementById('pRef').textContent = formatNum(p);
+            document.getElementById('intRef').textContent = formatNum(totalInterest);
+            
+            document.getElementById('resultArea').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
