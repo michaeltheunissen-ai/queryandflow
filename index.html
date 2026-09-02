@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Share Risk Classifier</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0f0f11;
+  color: #e8e8e5;
+  min-height: 100vh;
+}
+
+.header {
+  background: #18181c;
+  border-bottom: 0.5px solid #2a2a30;
+  padding: 1rem 1.25rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0.85rem;
+}
+
+.logo {
+  width: 32px; height: 32px;
+  background: #1a3a28;
+  border: 0.5px solid #2a5a3a;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+
+.header h1 { font-size: 16px; font-weight: 600; color: #f0f0ec; }
+.header p  { font-size: 12px; color: #666; margin-top: 1px; }
+
+.search-row { display: flex; gap: 8px; }
+
+input[type="text"] {
+  flex: 1;
+  background: #111115;
+  border: 0.5px solid #2a2a30;
+  border-radius: 8px;
+  padding: 9px 13px;
+  font-size: 14px;
+  color: #e8e8e5;
+  outline: none;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: border-color 0.15s;
+}
+
+input[type="text"]::placeholder {
+  text-transform: none;
+  letter-spacing: 0;
+  color: #444;
+  font-family: -apple-system, sans-serif;
+}
+
+input[type="text"]:focus { border-color: #2a6a46; box-shadow: 0 0 0 2px rgba(42,106,70,0.2); }
+
+.btn {
+  background: #1a5a36;
+  color: #8adfaa;
+  border: 0.5px solid #2a7a4a;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.btn:hover { background: #1e6a3e; }
+.btn:disabled { background: #111; color: #333; border-color: #222; cursor: not-allowed; }
+
+.status-bar {
+  background: #111115;
+  border-bottom: 0.5px solid #1e1e24;
+  padding: 6px 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 11px;
+  color: #555;
+}
+
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #333;
+  transition: background 0.3s;
+}
+
+.status-dot.ok     { background: #4aaa6a; }
+.status-dot.error  { background: #cc4444; }
+
+.hint {
+  font-size: 11px;
+  color: #444;
+  padding: 6px 1.25rem;
+  background: #18181c;
+  border-bottom: 0.5px solid #1e1e24;
+}
+
+.filter-strip {
+  display: flex;
+  gap: 6px;
+  padding: 0.65rem 1.25rem;
+  background: #18181c;
+  border-bottom: 0.5px solid #1e1e24;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.filter-strip::-webkit-scrollbar { display: none; }
+
+.pill {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px; font-weight: 500;
+  white-space: nowrap;
+  border: 0.5px solid;
+  cursor: pointer;
+  background: transparent;
+  transition: background 0.15s;
+}
+
+.pill.all    { color: #888;    border-color: #333; }
+.pill.low    { color: #6bcf8a; border-color: #2a5a3a; }
+.pill.medium { color: #f0c060; border-color: #5a4010; }
+.pill.high   { color: #f08060; border-color: #5a2510; }
+.pill.bubble { color: #d080f0; border-color: #4a1a6a; }
+
+.pill.active.all    { background: #222; }
+.pill.active.low    { background: #1a3a28; }
+.pill.active.medium { background: #3a2c0a; }
+.pill.active.high   { background: #3a1808; }
+.pill.active.bubble { background: #2a0a40; }
+
+.dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.dot.low    { background: #6bcf8a; }
+.dot.medium { background: #f0c060; }
+.dot.high   { background: #f08060; }
+.dot.bubble { background: #d080f0; }
+
+.cnt {
+  font-size: 10px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 1px 5px;
+}
+
+.content {
+  padding: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 5rem 1rem;
+  color: #444;
+}
+
+.empty-state .icon { font-size: 44px; margin-bottom: 1rem; opacity: 0.3; }
+.empty-state h3 { font-size: 15px; color: #666; margin-bottom: 6px; font-weight: 500; }
+.empty-state p  { font-size: 13px; line-height: 1.7; max-width: 380px; margin: 0 auto; }
+
+/* Result card */
+.card {
+  background: #18181c;
+  border: 0.5px solid #2a2a30;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  animation: fadeUp 0.2s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px 10px;
+  border-bottom: 0.5px solid #1e1e24;
+  flex-wrap: wrap;
+}
+
+.ticker-tag {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 13px; font-weight: 600;
+  letter-spacing: 0.07em;
+  padding: 3px 9px;
+  border-radius: 5px;
+}
+
+.ticker-tag.low    { background: #1a3a28; color: #6bcf8a; }
+.ticker-tag.medium { background: #3a2c0a; color: #f0c060; }
+.ticker-tag.high   { background: #3a1808; color: #f08060; }
+.ticker-tag.bubble { background: #2a0a40; color: #d080f0; }
+
+.co-name {
+  flex: 1;
+  font-size: 13px;
+  color: #bbb;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.co-name span { color: #555; font-size: 11px; }
+
+.risk-badge {
+  font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.09em;
+  padding: 2px 8px; border-radius: 4px;
+}
+
+.risk-badge.low    { background: #1a3a28; color: #6bcf8a; }
+.risk-badge.medium { background: #3a2c0a; color: #f0c060; }
+.risk-badge.high   { background: #3a1808; color: #f08060; }
+.risk-badge.bubble { background: #2a0a40; color: #d080f0; }
+
+.del-btn {
+  background: none; border: none;
+  color: #333; cursor: pointer;
+  font-size: 14px; padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+  line-height: 1;
+}
+.del-btn:hover { color: #cc4444; }
+
+/* Risk meter */
+.meter {
+  height: 2px;
+  background: #1e1e24;
+  margin: 0;
+}
+.meter-fill {
+  height: 100%;
+  transition: width 1s ease;
+}
+.meter-fill.low    { width: 18%;  background: #6bcf8a; }
+.meter-fill.medium { width: 48%;  background: #f0c060; }
+.meter-fill.high   { width: 78%;  background: #f08060; }
+.meter-fill.bubble { width: 100%; background: #d080f0; }
+
+.card-body { padding: 12px 14px; }
+
+/* Live data strip */
+.data-strip {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 0.5px solid #1e1e24;
+}
+
+.data-chip {
+  background: #111115;
+  border-radius: 6px;
+  padding: 5px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 80px;
+}
+
+.data-chip .lbl { font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: 0.07em; }
+.data-chip .val { font-size: 12px; font-weight: 500; color: #ccc; font-family: 'SF Mono', monospace; }
+
+/* Metrics grid */
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.metric {
+  background: #111115;
+  border-radius: 7px;
+  padding: 8px 10px;
+}
+
+.metric .lbl { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+.metric .val { font-size: 12px; font-weight: 500; color: #ccc; line-height: 1.4; }
+.metric .sig { font-size: 10px; margin-top: 3px; }
+
+.sig.positive { color: #6bcf8a; }
+.sig.neutral  { color: #f0c060; }
+.sig.negative { color: #f08060; }
+
+.reasoning {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #999;
+  border-top: 0.5px solid #1e1e24;
+  padding-top: 10px;
+}
+
+.confidence {
+  display: inline-block;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #555;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* Loading card */
+.loading-card {
+  background: #18181c;
+  border: 0.5px solid #2a2a30;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid #222;
+  border-top-color: #2a6a46;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-card .lt { font-size: 11px; color: #555; font-family: monospace; letter-spacing: 0.06em; }
+.loading-card .ls { font-size: 12px; color: #666; margin-top: 2px; }
+
+/* Error toast */
+.err-toast {
+  background: #2a1010;
+  border: 0.5px solid #5a2020;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #f08080;
+  animation: fadeUp 0.2s ease;
+}
+
+.footer {
+  font-size: 11px;
+  color: #333;
+  text-align: center;
+  padding: 10px 1rem 16px;
+  border-top: 0.5px solid #1a1a1e;
+  margin-top: 2rem;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">📊</div>
+    <div>
+      <h1>Share Risk Classifier</h1>
+      <p>Yahoo Finance data · Local AI · Zero cost</p>
+    </div>
+  </div>
+  <div class="search-row">
+    <input type="text" id="tickerInput"
+      placeholder="Ticker symbol, e.g. MTN.JO or AAPL"
+      autocomplete="off" autocorrect="off" spellcheck="false" />
+    <button class="btn" id="analyseBtn" onclick="analyse()">Analyse</button>
+  </div>
+</div>
+
+<div class="status-bar">
+  <span style="display:flex;align-items:center;gap:5px;">
+    <span class="status-dot" id="lmDot"></span>
+    <span id="lmStatus">Checking LM Studio…</span>
+  </span>
+  <span>|</span>
+  <span>Yahoo Finance: live data</span>
+</div>
+
+<div class="hint">
+  JSE: MTN.JO · VOD.JO · NPN.JO · SBK.JO &nbsp;|&nbsp; US: AAPL · NVDA · TSLA &nbsp;|&nbsp; UK: SHEL.L · ULVR.L
+</div>
+
+<div class="filter-strip">
+  <button class="pill all active" onclick="filterBy('all')">All <span class="cnt" id="cnt-all">0</span></button>
+  <button class="pill low"    onclick="filterBy('low')"><span class="dot low"></span>Low <span class="cnt" id="cnt-low">0</span></button>
+  <button class="pill medium" onclick="filterBy('medium')"><span class="dot medium"></span>Medium <span class="cnt" id="cnt-medium">0</span></button>
+  <button class="pill high"   onclick="filterBy('high')"><span class="dot high"></span>High <span class="cnt" id="cnt-high">0</span></button>
+  <button class="pill bubble" onclick="filterBy('bubble')"><span class="dot bubble"></span>Bubble <span class="cnt" id="cnt-bubble">0</span></button>
+</div>
+
+<div class="content" id="content">
+  <div class="empty-state" id="emptyState">
+    <div class="icon">📈</div>
+    <h3>No stocks analysed yet</h3>
+    <p>Enter a ticker above. Real financial data is fetched from Yahoo Finance and classified by your local AI — completely free.</p>
+  </div>
+</div>
+
+<div class="footer">
+  Data sourced from Yahoo Finance. Classification by local LLM. Not financial advice — consult a qualified advisor before investing.
+</div>
+
+<script>
+const API = 'http://localhost:8003';
+let results = [];
+let activeFilter = 'all';
+
+// Check LM Studio on load
+async function checkHealth() {
+  try {
+    const r = await fetch(API + '/health');
+    const d = await r.json();
+    const dot = document.getElementById('lmDot');
+    const txt = document.getElementById('lmStatus');
+    if (d.lm_studio) {
+      dot.className = 'status-dot ok';
+      txt.textContent = 'LM Studio: connected';
+    } else {
+      dot.className = 'status-dot error';
+      txt.textContent = 'LM Studio: not detected — start LM Studio and load a model';
+    }
+  } catch {
+    document.getElementById('lmStatus').textContent = 'Server starting…';
+  }
+}
+
+checkHealth();
+setInterval(checkHealth, 15000);
+
+document.getElementById('tickerInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') analyse();
+});
+
+async function analyse() {
+  const input = document.getElementById('tickerInput');
+  const ticker = input.value.trim().toUpperCase();
+  if (!ticker) return;
+
+  const btn = document.getElementById('analyseBtn');
+  btn.disabled = true;
+  input.value = '';
+
+  document.getElementById('emptyState').style.display = 'none';
+
+  const loadId = 'load-' + Date.now();
+  const loadEl = document.createElement('div');
+  loadEl.className = 'loading-card';
+  loadEl.id = loadId;
+  loadEl.innerHTML = `
+    <div class="spinner"></div>
+    <div>
+      <div class="lt">${ticker}</div>
+      <div class="ls">Fetching Yahoo Finance data…</div>
+    </div>`;
+
+  const content = document.getElementById('content');
+  content.insertBefore(loadEl, content.firstChild);
+
+  try {
+    const res = await fetch(API + '/analyse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ticker })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Unknown error');
+    }
+
+    const data = await res.json();
+    document.getElementById(loadId)?.remove();
+    const card = buildCard(data);
+    content.insertBefore(card, content.firstChild);
+    results.unshift({ id: card.id, bucket: data.classification?.bucket || 'high' });
+    updateCounts();
+    applyFilter(activeFilter);
+
+  } catch (err) {
+    document.getElementById(loadId)?.remove();
+    const errEl = document.createElement('div');
+    errEl.className = 'err-toast';
+    errEl.textContent = `${ticker}: ${err.message}`;
+    content.insertBefore(errEl, content.firstChild);
+    setTimeout(() => errEl.remove(), 6000);
+  }
+
+  btn.disabled = false;
+  if (!results.length) document.getElementById('emptyState').style.display = '';
+}
+
+function fmt(val) {
+  if (val === null || val === undefined || val === 'N/A') return '—';
+  if (typeof val === 'number') {
+    if (Math.abs(val) >= 1e9) return (val / 1e9).toFixed(1) + 'B';
+    if (Math.abs(val) >= 1e6) return (val / 1e6).toFixed(1) + 'M';
+    return val.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  }
+  return val;
+}
+
+function pct(val) {
+  if (val === null || val === undefined || val === 'N/A') return '—';
+  return (parseFloat(val) * 100).toFixed(1) + '%';
+}
+
+function buildCard(d) {
+  const cl = d.classification || {};
+  const bucket = (cl.bucket || 'high').toLowerCase();
+  const ma = cl.metrics_assessment || {};
+  const id = 'card-' + Date.now();
+
+  const bucketLabel = { low: 'Low Risk', medium: 'Medium Risk', high: 'High Risk', bubble: 'Bubble' };
+  const sigIcon = s => s === 'positive' ? '▲' : s === 'negative' ? '▼' : '●';
+
+  function metricHtml(m) {
+    if (!m) return { val: '—', sig: 'neutral' };
+    return { val: m.value || '—', sig: m.signal || 'neutral' };
+  }
+
+  const cf  = metricHtml(ma.cashflow);
+  const bs  = metricHtml(ma.balance_sheet);
+  const val = metricHtml(ma.valuation);
+  const vol = metricHtml(ma.volatility);
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.id = id;
+  card.dataset.bucket = bucket;
+
+  card.innerHTML = `
+    <div class="card-head">
+      <span class="ticker-tag ${bucket}">${d.ticker}</span>
+      <span class="co-name">${d.company} <span>${d.exchange || ''} ${d.currency ? '· ' + d.currency : ''}</span></span>
+      <span class="risk-badge ${bucket}">${bucketLabel[bucket] || bucket}</span>
+      <button class="del-btn" onclick="removeCard('${id}')" title="Remove">✕</button>
+    </div>
+    <div class="meter"><div class="meter-fill ${bucket}"></div></div>
+    <div class="card-body">
+      <div class="data-strip">
+        <div class="data-chip"><span class="lbl">Price</span><span class="val">${fmt(d.current_price)}</span></div>
+        <div class="data-chip"><span class="lbl">P/E</span><span class="val">${fmt(d.pe_ratio)}</span></div>
+        <div class="data-chip"><span class="lbl">Beta</span><span class="val">${fmt(d.beta)}</span></div>
+        <div class="data-chip"><span class="lbl">D/E</span><span class="val">${fmt(d.debt_to_equity)}</span></div>
+        <div class="data-chip"><span class="lbl">Div Yield</span><span class="val">${d.dividend_yield && d.dividend_yield !== 'N/A' ? pct(d.dividend_yield) : '—'}</span></div>
+        <div class="data-chip"><span class="lbl">Mkt Cap</span><span class="val">${fmt(d.market_cap)}</span></div>
+      </div>
+      <div class="metrics">
+        <div class="metric">
+          <div class="lbl">Cash Flow</div>
+          <div class="val">${cf.val}</div>
+          <div class="sig ${cf.sig}">${sigIcon(cf.sig)} ${cf.sig}</div>
+        </div>
+        <div class="metric">
+          <div class="lbl">Balance Sheet</div>
+          <div class="val">${bs.val}</div>
+          <div class="sig ${bs.sig}">${sigIcon(bs.sig)} ${bs.sig}</div>
+        </div>
+        <div class="metric">
+          <div class="lbl">Valuation</div>
+          <div class="val">${val.val}</div>
+          <div class="sig ${val.sig}">${sigIcon(val.sig)} ${val.sig}</div>
+        </div>
+        <div class="metric">
+          <div class="lbl">Volatility</div>
+          <div class="val">${vol.val}</div>
+          <div class="sig ${vol.sig}">${sigIcon(vol.sig)} ${vol.sig}</div>
+        </div>
+      </div>
+      <div class="reasoning">
+        ${cl.reasoning || ''}
+        <span class="confidence">Confidence: ${cl.confidence || '—'}</span>
+      </div>
+    </div>`;
+
+  return card;
+}
+
+function removeCard(id) {
+  document.getElementById(id)?.remove();
+  results = results.filter(r => r.id !== id);
+  updateCounts();
+  if (!results.length) document.getElementById('emptyState').style.display = '';
+}
+
+function updateCounts() {
+  const t = { low: 0, medium: 0, high: 0, bubble: 0 };
+  results.forEach(r => { if (t[r.bucket] !== undefined) t[r.bucket]++; });
+  document.getElementById('cnt-all').textContent    = results.length;
+  document.getElementById('cnt-low').textContent    = t.low;
+  document.getElementById('cnt-medium').textContent = t.medium;
+  document.getElementById('cnt-high').textContent   = t.high;
+  document.getElementById('cnt-bubble').textContent = t.bubble;
+}
+
+function filterBy(bucket) {
+  activeFilter = bucket;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  document.querySelector('.pill.' + bucket)?.classList.add('active');
+  applyFilter(bucket);
+}
+
+function applyFilter(bucket) {
+  document.querySelectorAll('.card').forEach(c => {
+    c.style.display = (bucket === 'all' || c.dataset.bucket === bucket) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>
