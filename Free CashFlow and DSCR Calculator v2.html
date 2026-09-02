@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSCR & Free Cashflow Calculator Agent (v2.0)</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --accent-color: #0056b3;
+            --header-bg: #e9ecef;
+            --border-color: #ced4da;
+            --success-color: #d4edda;
+            --success-text: #155724;
+            --highlight-yellow: #fff3cd;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        h1, h2 {
+            color: var(--accent-color);
+        }
+        h1 { margin: 0; }
+        h2 { border-bottom: 2px solid var(--header-bg); padding-bottom: 10px; margin-top: 40px; font-size: 1.5rem;}
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--header-bg);
+            font-weight: 600;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box; 
+        }
+        
+        input[type="number"] { text-align: right; }
+        .currency-display { text-align: right; font-family: monospace; font-weight: bold;}
+        .readonly-input { background-color: #e9ecef; color: #495057; cursor: not-allowed; }
+
+        /* Highlights */
+        .yellow-highlight { background-color: #ffeb3b; font-weight: bold; }
+        .orange-highlight { background-color: #fddbc5; font-weight: bold; }
+        .green-highlight { background-color: #c7e6c4; font-weight: bold; }
+
+        .total-row td {
+            border-top: 2px solid #333;
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+
+        /* Sub-table for Working Capital */
+        .sub-table {
+            margin: 0;
+            background-color: #fcfcfc;
+            border-left: 4px solid var(--accent-color);
+        }
+        .sub-table th {
+            background-color: #f1f3f5;
+            font-size: 0.9rem;
+            padding: 8px 15px;
+        }
+        .sub-table td {
+            padding: 8px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .btn-add { background-color: var(--accent-color); color: white; }
+        .btn-add:hover { background-color: #004494; }
+        .btn-remove { background-color: #dc3545; color: white; padding: 5px 10px; font-size: 0.8rem;}
+        .btn-remove:hover { background-color: #c82333; }
+        .btn-print { background-color: #28a745; color: white; }
+        .btn-print:hover { background-color: #218838; }
+        .btn-reset { background-color: #ffc107; color: #212529; }
+        .btn-reset:hover { background-color: #e0a800; }
+
+        /* Final Results Section */
+        #final-results {
+            background-color: var(--header-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 40px;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        .dscr-result {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            border-top: 2px solid #333;
+            padding-top: 15px;
+        }
+
+        .helper-text {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+
+        /* --- TOOLTIP STYLES --- */
+        .tooltip-container {
+            position: relative;
+            cursor: help;
+            border-bottom: 1px dashed #666;
+        }
+        
+        .tooltip-container::after {
+            content: " ℹ️";
+            font-size: 0.8em;
+            opacity: 0.6;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 260px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -130px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85rem;
+            font-weight: normal;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .positive-impact { color: #155724; font-weight: bold;}
+        .negative-impact { color: #721c24; font-weight: bold;}
+
+        /* --- ASSESSMENT STYLES --- */
+        #assessment-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            display: flex;
+            flex-direction: column;
+        }
+        .assessment-approved { background-color: #d4edda; color: #155724; border-left: 5px solid #28a745; }
+        .assessment-marginal { background-color: #fff3cd; color: #856404; border-left: 5px solid #ffc107; }
+        .assessment-doubtful { background-color: #f8d7da; color: #721c24; border-left: 5px solid #dc3545; }
+        .assessment-na { background-color: #e2e3e5; color: #383d41; border-left: 5px solid #6c757d; }
+
+        /* --- MODAL STYLES --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 400px;
+            text-align: left;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .modal-content h3 { margin-top: 0; color: var(--accent-color); }
+
+        /* --- FOOTER STYLES --- */
+        .site-footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: #555;
+        }
+        .site-footer .property-text {
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+        .site-footer .disclaimer-text {
+            font-size: 0.8rem;
+            font-style: italic;
+            color: #777;
+            line-height: 1.4;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .site-footer .footnote {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 15px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* --- PRINT STYLES --- */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background-color: #fff;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+            input[type="number"], input[type="text"] {
+                border: none;
+                background: transparent;
+                padding: 0;
+            }
+            .tooltip-container::after {
+                content: "";
+            }
+            .tooltip-container {
+                border-bottom: none;
+            }
+            .site-footer {
+                margin-top: 30px;
+                border-top: 2px solid #333;
+            }
+            #assessment-container {
+                border: 1px solid #ccc;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Custom Confirmation Modal -->
+<div id="confirmModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <h3>Clear All Data?</h3>
+        <p>Are you sure you want to start afresh? This will delete all inputs, calculations, and custom rows.</p>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 25px;">
+            <button class="btn" style="background: #e9ecef; color: #333;" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-remove" onclick="executeReset()">Yes, Clear All</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header-container">
+        <h1>Business Financial Assessment Agent <span style="font-size: 0.9rem; color: #888; font-weight: normal;">v2.0</span></h1>
+        <div class="header-buttons no-print">
+            <button class="btn btn-reset" onclick="requestReset()">🔄 Start Afresh</button>
+            <button class="btn btn-print" onclick="window.print()">🖨️ Print Report</button>
+        </div>
+    </div>
+    <p class="no-print">Hover over items with a ℹ️ icon to see an explanation. Enter negative outflows (like Capex and Tax paid) with a negative sign.</p>
+
+    <!-- SECTION 1: INITIAL FINANCIALS & FCF -->
+    <h2>1. Financial Inputs & Free Cashflow Calculation</h2>
+    <table>
+        <tr>
+            <th style="width: 50%;">Item</th>
+            <th>Input Value</th>
+        </tr>
+        <tr>
+            <td class="yellow-highlight">
+                <span class="tooltip-container">EBITDA (Financials)
+                    <span class="tooltip-text">Earnings from core operations before interest, tax, depreciation, and amortization. Shows raw operational profit.</span>
+                </span>
+            </td>
+            <td><input type="number" id="ebitdaInput" value="9950941" oninput="calculateAll()"></td>
+        </tr>
+        
+        <!-- WORKING CAPITAL SUB-SECTION -->
+        <tr>
+            <td colspan="2" style="padding: 0;">
+                <table class="sub-table">
+                    <tr>
+                        <th style="width: 40%;">
+                            <span class="tooltip-container">Working Capital Components
+                                <span class="tooltip-text">Calculate the cash tied up in day-to-day trading. Enter balances from your prior and current financials.</span>
+                            </span>
+                        </th>
+                        <th style="width: 20%;">Prior Period</th>
+                        <th style="width: 20%;">Current Period</th>
+                        <th style="width: 20%; text-align: right;">Cash Flow Impact</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="tooltip-container">Accounts Receivable (Debtors)
+                                <span class="tooltip-text">Money owed to you by customers. If this number goes UP, it means you haven't collected the cash yet, resulting in a negative cash flow impact.</span>
+                            </span>
+                        </td>
+                        <td><input type="number" id="priorDebtors" value="0" oninput="calculateWC()"></td>
+                        <td><input type="number" id="currentDebtors" value="0" oninput="calculateWC()"></td>
+                        <td id="debtorsImpact" class="currency-display">0</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="tooltip-container">Inventory (Stock)
+                                <span class="tooltip-text">Goods waiting to be sold. If this number goes UP, it means you spent cash to buy stock, resulting in a negative cash flow impact.</span>
+                            </span>
+                        </td>
+                        <td><input type="number" id="priorStock" value="0" oninput="calculateWC()"></td>
+                        <td><input type="number" id="currentStock" value="0" oninput="calculateWC()"></td>
+                        <td id="stockImpact" class="currency-display">0</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="tooltip-container">Accounts Payable (Creditors)
+                                <span class="tooltip-text">Money you owe to suppliers. If this number goes UP, it means you held onto your cash longer, resulting in a positive cash flow impact.</span>
+                            </span>
+                        </td>
+                        <td><input type="number" id="priorCreditors" value="0" oninput="calculateWC()"></td>
+                        <td><input type="number" id="currentCreditors" value="0" oninput="calculateWC()"></td>
+                        <td id="creditorsImpact" class="currency-display">0</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" style="text-align: right; font-weight: bold; background-color: #e9ecef;">Net Changes in Working Capital (Auto-calculated):</td>
+                        <td style="padding: 0;">
+                            <input type="number" id="wcInput" class="readonly-input" value="-85222" readonly style="border: none; background-color: transparent; font-weight: bold;">
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <!-- END WORKING CAPITAL SUB-SECTION -->
+
+        <tr>
+            <td>
+                <span class="tooltip-container">Capex
+                    <span class="tooltip-text">Capital Expenditure. Money spent on physical assets like machinery, vehicles, or buildings.</span>
+                </span>
+            </td>
+            <td><input type="number" id="capexInput" value="-718476" oninput="calculateAll()"></td>
+        </tr>
+        <tr>
+            <td>
+                <span class="tooltip-container">Tax
+                    <span class="tooltip-text">Corporate income tax paid to the government. Enter as a NEGATIVE number (a cash outflow), the same way Capex is entered.</span>
+                </span>
+            </td>
+            <td><input type="number" id="taxInput" value="0" oninput="calculateAll()"></td>
+        </tr>
+        <tr class="total-row orange-highlight">
+            <td>
+                <span class="tooltip-container">Adjusted Free Cashflow (available for debt service)
+                    <span class="tooltip-text">The cash actually available to service debt: normalized (write-back adjusted) EBITDA, plus the working capital swing, Capex and Tax. This is the figure used as the DSCR numerator below — it updates as you complete Section 2's write-backs.</span>
+                </span>
+            </td>
+            <td id="fcfTotal" class="currency-display">0</td>
+        </tr>
+    </table>
+
+    <!-- SECTION 2: WRITE-BACKS -->
+    <h2>2. Write-backs (EBITDA Adjustments)</h2>
+    <p class="helper-text no-print">Add adjustments here. The "Annual Impact Column T" is used for calculations.</p>
+    <table id="writebacksTable">
+        <thead>
+        <tr>
+            <th style="width: 25%;">
+                <span class="tooltip-container">Description
+                    <span class="tooltip-text">Name of the adjustment (e.g. "One-off legal fee").</span>
+                </span>
+            </th>
+            <th style="width: 15%;">Monthly (p.m.)</th>
+            <th style="width: 15%;">
+                <span class="tooltip-container">Annual Impact
+                    <span class="tooltip-text">The total yearly amount to add back (positive) or remove (negative) to normalize profit.</span>
+                </span>
+            </th>
+            <th style="width: 35%;">Notes (Column U)</th>
+            <th style="width: 10%;" class="no-print">Action</th>
+        </tr>
+        </thead>
+        <tbody id="writebacksBody">
+            <!-- Rows will be added here dynamically -->
+        </tbody>
+        <tfoot>
+        <tr class="total-row">
+            <td colspan="2" style="text-align: right;">Total Write-backs:</td>
+            <td id="writebacksTotal" class="currency-display">0</td>
+            <td colspan="2" class="no-print"></td>
+        </tr>
+        </tfoot>
+    </table>
+    <button class="btn btn-add no-print" onclick="addWritebackRow()">+ Add Write-back Adjustment</button>
+
+
+    <!-- SECTION 3: IBD STRUCTURE -->
+    <h2>3. Interest Bearing Debt (IBD) Structure</h2>
+    <p class="helper-text no-print">Add existing and new debts. Check "Include" for debts that remain after restructure.</p>
+    <table id="ibdTable">
+        <thead>
+        <tr>
+            <th style="width: 5%;">
+                <span class="tooltip-container">Inc.
+                    <span class="tooltip-text">Check this box to include this debt in the final calculation. Uncheck for debts being removed.</span>
+                </span>
+            </th>
+            <th style="width: 20%;">
+                <span class="tooltip-container">Description
+                    <span class="tooltip-text">The name of the bank or institution providing the loan.</span>
+                </span>
+            </th>
+            <th style="width: 15%;">
+                <span class="tooltip-container">Annual Repayment
+                    <span class="tooltip-text">Total capital and interest payments made on this loan per year.</span>
+                </span>
+            </th>
+            <th style="width: 50%;">Notes (Column U)</th>
+            <th style="width: 10%;" class="no-print">Action</th>
+        </tr>
+        </thead>
+        <tbody id="ibdBody">
+            <!-- Rows will be added here dynamically -->
+        </tbody>
+        <tfoot>
+        <tr class="total-row yellow-highlight">
+            <td colspan="2" style="text-align: right;">Total Annual IBD Repayments (Selected):</td>
+            <td id="ibdTotal" class="currency-display">0</td>
+            <td colspan="2" class="no-print">Based on checked items</td>
+        </tr>
+        </tfoot>
+    </table>
+    <button class="btn btn-add no-print" onclick="addIBDRow()">+ Add IBD Debt Row</button>
+
+
+    <!-- SECTION 4: FINAL RESULTS -->
+    <h2>4. Final Assessment Results</h2>
+    <div id="final-results">
+        <div class="result-item">
+            <span>Original EBITDA:</span>
+            <span id="res-orig-ebitda" class="currency-display">0</span>
+        </div>
+        <div class="result-item">
+            <span>Total Adjustments (Write-backs):</span>
+            <span id="res-adjustments" class="currency-display">0</span>
+        </div>
+        <div class="result-item yellow-highlight" style="padding: 5px;">
+            <span>
+                <span class="tooltip-container">= Adjusted EBITDA
+                    <span class="tooltip-text">The normalized operational profit after removing one-off items.</span>
+                </span>
+            </span>
+            <span id="res-adj-ebitda" class="currency-display">0</span>
+        </div>
+        <div class="result-item">
+            <span>
+                <span class="tooltip-container">+/- Net Change in Working Capital
+                    <span class="tooltip-text">Cash tied up or released by movements in debtors, stock and creditors (from Section 1).</span>
+                </span>
+            </span>
+            <span id="res-wc" class="currency-display">0</span>
+        </div>
+        <div class="result-item">
+            <span>
+                <span class="tooltip-container">+ Capex
+                    <span class="tooltip-text">Capital expenditure (from Section 1). Normally entered as a negative outflow.</span>
+                </span>
+            </span>
+            <span id="res-capex" class="currency-display">0</span>
+        </div>
+        <div class="result-item">
+            <span>
+                <span class="tooltip-container">+/- Tax
+                    <span class="tooltip-text">Tax paid (from Section 1). Normally entered as a negative outflow.</span>
+                </span>
+            </span>
+            <span id="res-tax" class="currency-display">0</span>
+        </div>
+        <div class="result-item yellow-highlight" style="padding: 5px;">
+            <span>
+                <span class="tooltip-container">= Adjusted Free Cash Flow (available for debt service)
+                    <span class="tooltip-text">Normalized EBITDA after write-backs, Working Capital movement, Capex and Tax. This is the cash actually available to service debt, and is the DSCR numerator.</span>
+                </span>
+            </span>
+            <span id="res-fcf" class="currency-display">0</span>
+        </div>
+        <br>
+        <div class="result-item yellow-highlight" style="padding: 5px;">
+             <span>
+                <span class="tooltip-container">/ Total Annual IBD Repayments
+                    <span class="tooltip-text">The sum of all loan payments (capital + interest) you selected to include above.</span>
+                </span>
+             </span>
+             <span id="res-total-ibd" class="currency-display">0</span>
+         </div>
+
+        <div class="result-item dscr-result">
+            <span>
+                <span class="tooltip-container">DSCR (Debt Service Cover Ratio)
+                    <span class="tooltip-text">A score of capability. 1.0 means you have exactly enough cash to pay debt. Higher (e.g. 1.5) is safer/better.</span>
+                </span>
+            </span>
+            <span id="dscrFinal">0.00</span>
+        </div>
+
+        <!-- Dynamic Assessment Output -->
+        <div id="assessment-container" class="assessment-na">
+            <strong>Credit Assessment Outlook:</strong> 
+            <span id="assessmentText">Awaiting calculation...</span>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="site-footer">
+        <div class="property-text">&copy; 2026 Property of MJT Consulting. All rights reserved.</div>
+        <div class="disclaimer-text">
+            Disclaimer: The calculations and information provided by this tool are for illustrative and educational purposes only and do not constitute financial, legal, accounting, or professional advice. While every effort has been made to ensure the accuracy of the methodology, MJT Consulting makes no warranties or guarantees regarding the results. Users should consult with a qualified financial advisor or accountant before making any business or financial decisions based on these outputs. MJT Consulting accepts no liability for any direct, indirect, or consequential loss arising from the use of this tool.
+        </div>
+        <div class="footnote">
+            Sources: Credit assessment thresholds used herein (Approved ≥ 1.25x, Marginal 1.0x - 1.24x, Doubtful < 1.0x) reflect standard global commercial banking underwriting practices for Debt Service Coverage Ratios; individual lenders may apply different thresholds. Data clearance mechanics reflect standard UX practices for embedded web applications.
+        </div>
+        <div class="footnote">
+            v2.0 methodology correction: the DSCR is now calculated on Adjusted Free Cash Flow (normalized EBITDA after write-backs, plus Working Capital movement, Capex and Tax) rather than on Adjusted EBITDA alone. In v1, Capex, Tax and Working Capital were calculated and displayed but did not affect the DSCR result.
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Helper to format numbers as currency
+    function formatNumber(num) {
+        if (isNaN(num)) return "0";
+        return num.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+    }
+    
+    // Format impact with colors
+    function formatImpact(elementId, value) {
+        const el = document.getElementById(elementId);
+        el.innerText = formatNumber(value);
+        if(value > 0) {
+            el.className = "currency-display positive-impact";
+        } else if (value < 0) {
+            el.className = "currency-display negative-impact";
+        } else {
+            el.className = "currency-display";
+        }
+    }
+
+    // Helper to get float value from input ID or default to 0
+    function getVal(id) {
+        const val = parseFloat(document.getElementById(id).value);
+        return isNaN(val) ? 0 : val;
+    }
+
+    // --- Modal Logic ---
+    function requestReset() {
+        document.getElementById('confirmModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('confirmModal').style.display = 'none';
+    }
+
+    function executeReset() {
+        closeModal();
+        
+        // Reset static financial inputs to 0
+        document.getElementById('ebitdaInput').value = 0;
+        document.getElementById('priorDebtors').value = 0;
+        document.getElementById('currentDebtors').value = 0;
+        document.getElementById('priorStock').value = 0;
+        document.getElementById('currentStock').value = 0;
+        document.getElementById('priorCreditors').value = 0;
+        document.getElementById('currentCreditors').value = 0;
+        document.getElementById('capexInput').value = 0;
+        document.getElementById('taxInput').value = 0;
+
+        // Clear dynamic table bodies
+        document.getElementById('writebacksBody').innerHTML = '';
+        document.getElementById('ibdBody').innerHTML = '';
+
+        // Trigger calculations to reset the displays
+        calculateWC();
+    }
+
+
+    // --- Working Capital Logic ---
+    function calculateWC() {
+        const priorDebtors = getVal('priorDebtors');
+        const currentDebtors = getVal('currentDebtors');
+        const debtorsImpact = priorDebtors - currentDebtors; 
+        formatImpact('debtorsImpact', debtorsImpact);
+
+        const priorStock = getVal('priorStock');
+        const currentStock = getVal('currentStock');
+        const stockImpact = priorStock - currentStock;
+        formatImpact('stockImpact', stockImpact);
+
+        const priorCreditors = getVal('priorCreditors');
+        const currentCreditors = getVal('currentCreditors');
+        const creditorsImpact = currentCreditors - priorCreditors;
+        formatImpact('creditorsImpact', creditorsImpact);
+
+        const wcTotal = debtorsImpact + stockImpact + creditorsImpact;
+        
+        document.getElementById('wcInput').value = wcTotal;
+        calculateAll();
+    }
+
+
+    // --- Row Manipulation ---
+    function addWritebackRow(desc="", pm="", ann="", note="") {
+        const tbody = document.getElementById('writebacksBody');
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td><input type="text" placeholder="Description" value="${desc}"></td>
+            <td><input type="number" placeholder="Monthly" value="${pm}"></td>
+            <td><input type="number" class="wb-annual" oninput="calculateAll()" value="${ann}"></td>
+            <td><input type="text" placeholder="Notes" value="${note}"></td>
+            <td class="no-print"><button class="btn btn-remove" onclick="removeRow(this)">Remove</button></td>
+        `;
+        calculateAll();
+    }
+
+    function addIBDRow(include=true, desc="", ann="", note="") {
+        const tbody = document.getElementById('ibdBody');
+        const row = tbody.insertRow();
+        const checked = include ? 'checked' : '';
+        row.innerHTML = `
+            <td style="text-align: center;"><input type="checkbox" class="ibd-include" onchange="calculateAll()" ${checked}></td>
+            <td><input type="text" placeholder="Description" value="${desc}"></td>
+            <td><input type="number" class="ibd-annual" oninput="calculateAll()" value="${ann}"></td>
+            <td><input type="text" placeholder="Notes" value="${note}"></td>
+            <td class="no-print"><button class="btn btn-remove" onclick="removeRow(this)">Remove</button></td>
+        `;
+        calculateAll();
+    }
+
+    function removeRow(btn) {
+        const row = btn.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+        calculateAll();
+    }
+
+    // --- Main Calculation Logic ---
+    // v2.0 FIX: previously, Section 1's "Adjusted Free Cashflow" (EBITDA + Working Capital
+    // + Capex + Tax) was calculated and displayed but never actually flowed into the DSCR
+    // ratio below — the DSCR used raw "EBITDA + write-backs" only, silently ignoring
+    // Capex, Tax and Working Capital movements entirely. This version makes the DSCR
+    // numerator the fully adjusted free cash flow figure, consistent with Section 1's
+    // own inputs and the "Free Cashflow and DSCR Calculator" name of the tool.
+    function calculateAll() {
+        const ebitda = getVal('ebitdaInput');
+        const wc = getVal('wcInput');
+        const capex = getVal('capexInput');
+        const tax = getVal('taxInput');
+
+        // Write-backs must be totalled first, since normalized (Adjusted) EBITDA is the
+        // starting point for the cash flow available for debt service, not raw EBITDA.
+        let wbTotal = 0;
+        document.querySelectorAll('.wb-annual').forEach(input => {
+            wbTotal += parseFloat(input.value) || 0;
+        });
+        document.getElementById('writebacksTotal').innerText = formatNumber(wbTotal);
+
+        const adjEBITDA = ebitda + wbTotal;
+
+        // Adjusted Free Cash Flow = normalized EBITDA, adjusted for the cash impact of
+        // Working Capital movements, Capex, and Tax. This is the cash actually available
+        // to service debt, and is now what both Section 1 and the DSCR ratio use.
+        const fcf = adjEBITDA + wc + capex + tax;
+        document.getElementById('fcfTotal').innerText = formatNumber(fcf);
+
+        let ibdTotal = 0;
+        const ibdRows = document.getElementById('ibdBody').rows;
+        for (let i = 0; i < ibdRows.length; i++) {
+            const include = ibdRows[i].querySelector('.ibd-include').checked;
+            const amount = parseFloat(ibdRows[i].querySelector('.ibd-annual').value) || 0;
+            if (include) {
+                ibdTotal += amount;
+            }
+        }
+        document.getElementById('ibdTotal').innerText = formatNumber(ibdTotal);
+
+        document.getElementById('res-orig-ebitda').innerText = formatNumber(ebitda);
+        document.getElementById('res-adjustments').innerText = formatNumber(wbTotal);
+        document.getElementById('res-adj-ebitda').innerText = formatNumber(adjEBITDA);
+        document.getElementById('res-wc').innerText = formatNumber(wc);
+        document.getElementById('res-capex').innerText = formatNumber(capex);
+        document.getElementById('res-tax').innerText = formatNumber(tax);
+        document.getElementById('res-fcf').innerText = formatNumber(fcf);
+        document.getElementById('res-total-ibd').innerText = formatNumber(ibdTotal);
+
+        let dscr = 0;
+        const assessmentContainer = document.getElementById('assessment-container');
+        const assessmentTextSpan = document.getElementById('assessmentText');
+
+        if (ibdTotal > 0) {
+            dscr = fcf / ibdTotal;
+            document.getElementById('dscrFinal').innerText = dscr.toFixed(2);
+            
+            if (dscr >= 1.25) {
+                assessmentContainer.className = "assessment-approved";
+                assessmentTextSpan.innerHTML = `<strong>Approved / Strong Prospect.</strong> The business yields sufficient cash flow to easily cover proposed and existing debt obligations. A DSCR of ${dscr.toFixed(2)}x indicates strong debt service capability.`;
+            } else if (dscr >= 1.0) {
+                assessmentContainer.className = "assessment-marginal";
+                assessmentTextSpan.innerHTML = `<strong>Marginal / Borderline.</strong> The business covers its debt obligations but leaves limited room for operational stress. A DSCR of ${dscr.toFixed(2)}x usually requires strong mitigants (like secondary collateral or solid guarantees) for approval.`;
+            } else {
+                assessmentContainer.className = "assessment-doubtful";
+                assessmentTextSpan.innerHTML = `<strong>Doubtful / High Risk.</strong> The DSCR falls below 1.00x, meaning the operations are currently generating insufficient cash flow to satisfy the proposed total annual debt obligations without drawing on external reserves.`;
+            }
+        } else {
+            document.getElementById('dscrFinal').innerText = "N/A (No Debt)";
+            assessmentContainer.className = "assessment-na";
+            assessmentTextSpan.innerHTML = "N/A: No debt obligations entered to evaluate.";
+        }
+    }
+
+    // --- Initialization ---
+    window.onload = function() {
+        document.getElementById('priorDebtors').value = 500000;
+        document.getElementById('currentDebtors').value = 585222;
+        calculateWC();
+        
+        addWritebackRow("Extraordinary Income (Early Settlement)", "", "-1500000", "Prudent approach reduced figure");
+        addWritebackRow("Consulting Fees Income", "", "-316296", "Accountant parked this income");
+        addWritebackRow("Other Income", "", "-123595", "Excluded as extraordinary");
+        
+        addIBDRow(false, "GFI CPF (Existing - Expunged)", "792000", "Existing and will be expunged through restructure");
+        addIBDRow(true, "GFI CPF (New Request)", "1963277", "New CPF of R12m over 10 years");
+        addIBDRow(true, "Wesbank", "306000", "Existing");
+        addIBDRow(true, "Wesbank", "63600", "Existing");
+        addIBDRow(true, "Wesbank", "66000", "Existing");
+        addIBDRow(true, "Wesbank", "182400", "Existing");
+        addIBDRow(true, "Technofin", "106080", "Existing");
+        addIBDRow(true, "Page Automation", "72000", "Existing");
+    };
+
+</script>
+
+</body>
+</html>
