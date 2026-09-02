@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrepreneurial Financial Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background-color: white;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .statement-row:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .currency-input {
+            text-align: right;
+            border: none;
+            background: transparent;
+            width: 100%;
+            font-family: monospace;
+            padding: 2px 4px;
+        }
+
+        .currency-input:focus {
+            background: white;
+            outline: 1px solid #3b82f6;
+            border-radius: 2px;
+        }
+
+        .section-header {
+            background-color: #f1f5f9;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            color: #475569;
+        }
+
+        .total-row {
+            font-weight: 700;
+            border-top: 1px solid #1e293b;
+            border-bottom: 1px solid #1e293b;
+            background-color: #f1f5f9;
+        }
+
+        .final-row {
+            font-weight: 800;
+            border-top: 2px solid #1e293b;
+            border-bottom: 4px double #1e293b;
+            background-color: #f1f5f9;
+        }
+
+        .tab-product-active {
+            border-bottom: 3px solid #2563eb;
+            color: #2563eb;
+            font-weight: 700;
+        }
+
+        .tab-service-active {
+            border-bottom: 3px solid #7c3aed;
+            color: #7c3aed;
+            font-weight: 700;
+        }
+
+        @media print {
+            .no-print { display: none; }
+            .print-container { padding: 0; box-shadow: none; width: 100%; max-width: 100%; }
+            body { background: white; padding: 0; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto space-y-8">
+        <!-- Header -->
+        <header class="text-center space-y-2">
+            <h1 class="text-3xl font-bold tracking-tight text-slate-900">Financial Projection & Income Statement</h1>
+            <p class="text-slate-500">Comprehensive IFRS-aligned template for Product and Service businesses.</p>
+        </header>
+
+        <!-- Step 1: Input Prompts -->
+        <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6 no-print">
+            <div class="flex items-center justify-between border-b pb-4">
+                <h2 class="text-xl font-semibold flex items-center gap-2">
+                    <span class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
+                    Core Business Assumptions
+                </h2>
+                <div class="flex gap-4 text-sm">
+                    <button id="tabProduct" onclick="switchModel('product')" class="pb-2 tab-product-active flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span> Products
+                    </button>
+                    <button id="tabService" onclick="switchModel('service')" class="pb-2 text-slate-400 hover:text-slate-600 flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-violet-500"></span> Services
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Common Field -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-700">How Much Do You Want to Pay Yourself Each Month?</label>
+                    <input type="number" id="monthlyDraw" class="form-input" min="0" placeholder="e.g. 5000" oninput="calculateAll()">
+                    <p class="text-xs text-slate-400 italic">Your own monthly salary or "owner's draw" — before tax.</p>
+                </div>
+
+                <!-- Product Specific Fields -->
+                <div id="productFields" class="contents">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-slate-700">How Many Units Do You Sell Per Day?</label>
+                        <input type="number" id="dailySales" class="form-input" min="0" placeholder="e.g. 10" oninput="calculateAll()">
+                        <div id="monthlyUnitsDisplay" class="text-xs font-semibold text-blue-600 mt-1">Monthly Total: 0 units</div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-slate-700">What Does It Cost You to Make or Buy One Unit?</label>
+                        <input type="number" id="unitCost" class="form-input" min="0" placeholder="e.g. 15.00" oninput="calculateAll()">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-slate-700">Markup % (Profit You Add on Top of Cost)</label>
+                        <input type="number" id="markupPercent" class="form-input" min="0" placeholder="e.g. 50" oninput="calculateAll()">
+                        <div id="salesPriceDisplay" class="text-xs font-semibold text-green-600 mt-1">Suggested Price: 0.00</div>
+                    </div>
+                </div>
+
+                <!-- Service Specific Fields -->
+                <div id="serviceFields" class="contents hidden">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-slate-700">What Do You Charge Per Hour?</label>
+                        <input type="number" id="hourlyRate" class="form-input" min="0" placeholder="e.g. 85.00" oninput="calculateAll()">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-slate-700">How Many Hours Do You Bill Per Day?</label>
+                        <input type="number" id="dailyHours" class="form-input" min="0" placeholder="e.g. 6" oninput="calculateAll()">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-slate-700">Call-Out or Base Fee (If You Charge One)</label>
+                        <input type="number" id="calloutFee" class="form-input" min="0" placeholder="e.g. 50.00" oninput="calculateAll()">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-slate-700">How Many Call-Outs Per Month?</label>
+                        <input type="number" id="monthlyCallouts" class="form-input" min="0" placeholder="e.g. 20" oninput="calculateAll()">
+                    </div>
+                </div>
+
+                <div class="md:col-span-2 space-y-2 border-t pt-4">
+                    <label class="block text-sm font-medium text-slate-700">How Do Your Prices Compare to Competitors?</label>
+                    <select id="positioning" class="form-input" onchange="calculateNett()">
+                        <option value="">Select an option...</option>
+                        <option value="better">Cheaper Than Competitors</option>
+                        <option value="inline">About the Same as Competitors</option>
+                        <option value="premium">More Expensive Than Competitors</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Quick Break-Even Dashboard -->
+            <div class="mt-8 bg-blue-50/50 border border-blue-100 rounded-lg p-5">
+                <h3 class="text-sm font-bold uppercase tracking-widest text-slate-700 mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    Quick Break-Even Targets (To Cover Draw & Expenses)
+                </h3>
+
+                <!-- Product Snapshot -->
+                <div id="productSnapshot" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white p-3 rounded shadow-sm border border-slate-200">
+                        <div class="text-xs text-slate-500 mb-1">Min. Daily Sales</div>
+                        <div id="snapMinUnits" class="text-lg font-bold text-slate-800">0 units</div>
+                    </div>
+                    <div class="bg-white p-3 rounded shadow-sm border border-slate-200">
+                        <div class="text-xs text-slate-500 mb-1">Min. Markup Reqd.</div>
+                        <div id="snapMinMarkup" class="text-lg font-bold text-slate-800">0%</div>
+                    </div>
+                    <div class="bg-white p-3 rounded shadow-sm border border-slate-200">
+                        <div class="text-xs text-slate-500 mb-1">Min. Sales Price</div>
+                        <div id="snapMinPrice" class="text-lg font-bold text-slate-800">0.00</div>
+                    </div>
+                    <div class="bg-white p-3 rounded shadow-sm border border-slate-200">
+                        <div class="text-xs text-slate-500 mb-1">Min. Annual Sales</div>
+                        <div id="snapMinRevProduct" class="text-lg font-bold text-slate-800">0.00</div>
+                    </div>
+                </div>
+
+                <!-- Service Snapshot -->
+                <div id="serviceSnapshot" class="grid grid-cols-2 md:grid-cols-3 gap-4 hidden">
+                    <div class="bg-white p-3 rounded shadow-sm border border-slate-200">
+                        <div class="text-xs text-slate-500 mb-1">Min. Daily Billable Hrs</div>
+                        <div id="snapMinHours" class="text-lg font-bold text-slate-800">0 hrs</div>
+                    </div>
+                    <div class="bg-white p-3 rounded shadow-sm border border-slate-200">
+                        <div class="text-xs text-slate-500 mb-1">Min. Hourly Rate</div>
+                        <div id="snapMinRate" class="text-lg font-bold text-slate-800">0.00</div>
+                    </div>
+                    <div class="bg-white p-3 rounded shadow-sm border border-slate-200">
+                        <div class="text-xs text-slate-500 mb-1">Min. Annual Sales</div>
+                        <div id="snapMinRevService" class="text-lg font-bold text-slate-800">0.00</div>
+                    </div>
+                </div>
+
+                <div class="mt-3 text-[10px] text-slate-500 italic">
+                    *These targets automatically adjust as you add or change Operating Expenses in the comprehensive statement below.
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 2: Full IFRS Income Statement -->
+        <section class="bg-white p-8 rounded-xl shadow-lg border border-slate-200 print-container overflow-x-auto">
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h2 class="text-2xl font-bold uppercase tracking-wider">Statement of Comprehensive Income</h2>
+                    <p class="text-sm text-slate-500 italic">(Annualized Projection • Presented by Nature)</p>
+                </div>
+                <div class="text-right no-print">
+                    <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded text-sm hover:bg-slate-700">Download/Print PDF</button>
+                </div>
+            </div>
+
+            <table class="w-full text-sm min-w-[600px]">
+                <thead>
+                    <tr class="border-b-2 border-slate-900">
+                        <th class="text-left py-3 w-2/3">Account Description</th>
+                        <th class="text-right py-3 w-1/3">Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="statementBody">
+                    <!-- REVENUE SECTION -->
+                    <tr class="section-header"><td colspan="2" class="py-2 px-2">1. Revenue (IFRS 15)</td></tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-4">Product sales / Widget sales (Auto-calculated)</td>
+                        <td><input type="number" id="revProductLocal" class="currency-input rev-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-4">Service / Hourly / Contract revenue (Auto-calculated)</td>
+                        <td><input type="number" id="revService" class="currency-input rev-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-4">Call-out / Maintenance / Base fees (Auto-calculated)</td>
+                        <td><input type="number" id="revFees" class="currency-input rev-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-4">Other (Subscription / Royalty / Rental)</td>
+                        <td><input type="number" class="currency-input rev-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="total-row">
+                        <td class="py-2 px-2 italic">Total Revenue</td>
+                        <td><input type="text" id="totalRevenue" class="currency-input font-bold" readonly></td>
+                    </tr>
+
+                    <!-- COST OF SALES -->
+                    <tr class="section-header"><td colspan="2" class="py-2 px-2">2. Cost of Sales</td></tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-4">Purchases / Raw materials / Consumables (Auto-calculated)</td>
+                        <td><input type="number" id="cosMaterials" class="currency-input cos-val text-red-600" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-4">Direct labour & Subcontractors</td>
+                        <td><input type="number" class="currency-input cos-val text-red-600" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-4">Freight, Duties and Landing Costs</td>
+                        <td><input type="number" class="currency-input cos-val text-red-600" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-4">Manufacturing / Service Overheads</td>
+                        <td><input type="number" class="currency-input cos-val text-red-600" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="total-row">
+                        <td class="py-2 px-2 italic">Total Cost of Sales</td>
+                        <td><input type="text" id="totalCOS" class="currency-input font-bold" readonly></td>
+                    </tr>
+
+                    <!-- GROSS PROFIT -->
+                    <tr class="final-row">
+                        <td class="py-3 px-2">3. GROSS PROFIT</td>
+                        <td><input type="text" id="grossProfit" class="currency-input font-bold" readonly></td>
+                    </tr>
+
+                    <!-- OPERATING EXPENSES -->
+                    <tr class="section-header"><td colspan="2" class="py-2 px-2">4. Operating Expenses</td></tr>
+
+                    <tr class="bg-slate-50 italic"><td colspan="2" class="py-1 px-4 text-xs font-semibold">Payroll</td></tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-6 text-xs">Owner Salary / Draw (Auto-calculated)</td>
+                        <td><input type="number" id="expOwnerSalary" class="currency-input exp-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-6 text-xs">Payroll & Wages (Staff Pay)</td>
+                        <td><input type="number" class="currency-input exp-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-6 text-xs">Payroll Taxes & Employee Benefits</td>
+                        <td><input type="number" class="currency-input exp-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+
+                    <tr class="bg-slate-50 italic"><td colspan="2" class="py-1 px-4 text-xs font-semibold">Premises & Admin</td></tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-6 text-xs">Rent / Lease</td>
+                        <td><input type="number" class="currency-input exp-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-6 text-xs">Utilities & Internet</td>
+                        <td><input type="number" class="currency-input exp-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-6 text-xs">Insurance</td>
+                        <td><input type="number" class="currency-input exp-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-6 text-xs">Software & Subscriptions</td>
+                        <td><input type="number" class="currency-input exp-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-6 text-xs">Bank Charges & Payment Processing Fees</td>
+                        <td><input type="number" class="currency-input exp-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-6 text-xs">Office Supplies</td>
+                        <td><input type="number" class="currency-input exp-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-6 text-xs">Accounting & Legal Fees</td>
+                        <td><input type="number" class="currency-input exp-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+
+                    <tr class="bg-slate-50 italic"><td colspan="2" class="py-1 px-4 text-xs font-semibold">Marketing & Travel</td></tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-6 text-xs">Marketing & Advertising</td>
+                        <td><input type="number" class="currency-input exp-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-6 text-xs">Travel & Vehicle Expenses</td>
+                        <td><input type="number" class="currency-input exp-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+
+                    <tr class="section-header"><td colspan="2" class="py-2 px-2">5. Depreciation & Amortisation</td></tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-4">Depreciation (Wear & Tear on Equipment)</td>
+                        <td><input type="number" class="currency-input exp-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+
+                    <tr class="section-header"><td colspan="2" class="py-2 px-2">6. Other Income / (Expenses)</td></tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-4 italic text-xs">Other Income or Losses (Grants, Bad Debts, etc.)</td>
+                        <td><input type="number" class="currency-input other-val" oninput="calculateNett()"></td>
+                    </tr>
+
+                    <tr class="section-header"><td colspan="2" class="py-2 px-2">7. Finance Income & Costs</td></tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-4">Interest Earned (Bank/Investments)</td>
+                        <td><input type="number" class="currency-input fin-inc-val" min="0" oninput="calculateNett()"></td>
+                    </tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-4">Interest Paid (Loans/Leases)</td>
+                        <td><input type="number" class="currency-input fin-cost-val text-red-600" min="0" oninput="calculateNett()"></td>
+                    </tr>
+
+                    <tr class="total-row">
+                        <td class="py-2 px-2 font-bold">PROFIT BEFORE TAX</td>
+                        <td><input type="text" id="profitBeforeTax" class="currency-input font-bold" readonly></td>
+                    </tr>
+
+                    <tr class="section-header"><td colspan="2" class="py-2 px-2">8. Income Tax Expense</td></tr>
+                    <tr class="statement-row">
+                        <td class="py-1 px-4">Income Tax</td>
+                        <td><input type="number" class="currency-input tax-val text-red-600" min="0" oninput="calculateNett()"></td>
+                    </tr>
+
+                    <tr class="final-row bg-slate-200">
+                        <td class="py-4 px-2 text-lg">9. PROFIT FOR THE YEAR (Nett Profit)</td>
+                        <td><input type="text" id="finalProfit" class="currency-input text-lg font-extrabold" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Analysis Section -->
+            <div id="analysisSection" class="mt-8 p-6 rounded-lg border hidden">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    What these numbers actually mean for you
+                </h3>
+                <div id="analysisContent" class="space-y-4 text-sm leading-relaxed text-slate-700"></div>
+            </div>
+
+            <div class="mt-8 text-[10px] text-slate-400 uppercase tracking-widest text-center border-t pt-4">
+                This analysis translates complex financial math into everyday, actionable business goals.
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let currentModel = 'product';
+
+        function formatNumber(num) {
+            return new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(num);
+        }
+
+        function switchModel(model) {
+            currentModel = model;
+            document.getElementById('productFields').classList.toggle('hidden', model !== 'product');
+            document.getElementById('serviceFields').classList.toggle('hidden', model !== 'service');
+
+            document.getElementById('productSnapshot').classList.toggle('hidden', model !== 'product');
+            document.getElementById('serviceSnapshot').classList.toggle('hidden', model !== 'service');
+
+            document.getElementById('tabProduct').className = model === 'product' ? 'pb-2 tab-product-active flex items-center gap-1.5' : 'pb-2 text-slate-400 hover:text-slate-600 flex items-center gap-1.5';
+            document.getElementById('tabService').className = model === 'service' ? 'pb-2 tab-service-active flex items-center gap-1.5' : 'pb-2 text-slate-400 hover:text-slate-600 flex items-center gap-1.5';
+
+            calculateAll();
+        }
+
+        function calculateAll() {
+            const monthlyDraw = parseFloat(document.getElementById('monthlyDraw').value) || 0;
+            let annualRevenue = 0;
+            let annualCOGS = 0;
+            let serviceRevenue = 0;
+            let feeRevenue = 0;
+
+            if (currentModel === 'product') {
+                const dailySales = parseFloat(document.getElementById('dailySales').value) || 0;
+                const unitCost = parseFloat(document.getElementById('unitCost').value) || 0;
+                const markupPercent = parseFloat(document.getElementById('markupPercent').value) || 0;
+
+                const monthlyUnits = dailySales * 30;
+                const annualUnits = monthlyUnits * 12;
+                const salesPrice = unitCost * (1 + (markupPercent / 100));
+
+                annualRevenue = annualUnits * salesPrice;
+                annualCOGS = annualUnits * unitCost;
+
+                document.getElementById('monthlyUnitsDisplay').innerText = `Monthly Total: ${monthlyUnits.toLocaleString()} units`;
+                document.getElementById('salesPriceDisplay').innerText = `Suggested Price: ${formatNumber(salesPrice)}`;
+
+                // Clear service fields in statement
+                document.getElementById('revProductLocal').value = annualRevenue.toFixed(2);
+                document.getElementById('revService').value = 0;
+                document.getElementById('revFees').value = 0;
+                document.getElementById('cosMaterials').value = annualCOGS.toFixed(2);
+            } else {
+                const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+                const dailyHours = parseFloat(document.getElementById('dailyHours').value) || 0;
+                const calloutFee = parseFloat(document.getElementById('calloutFee').value) || 0;
+                const monthlyCallouts = parseFloat(document.getElementById('monthlyCallouts').value) || 0;
+
+                // Service logic: 22 working days per month approx
+                serviceRevenue = (hourlyRate * dailyHours * 22) * 12;
+                feeRevenue = (calloutFee * monthlyCallouts) * 12;
+
+                document.getElementById('revProductLocal').value = 0;
+                document.getElementById('revService').value = serviceRevenue.toFixed(2);
+                document.getElementById('revFees').value = feeRevenue.toFixed(2);
+                document.getElementById('cosMaterials').value = 0;
+            }
+
+            document.getElementById('expOwnerSalary').value = (monthlyDraw * 12).toFixed(2);
+            calculateNett();
+        }
+
+        function calculateNett() {
+            const sumClass = (className) => {
+                let total = 0;
+                document.querySelectorAll(`.${className}`).forEach(input => {
+                    total += parseFloat(input.value) || 0;
+                });
+                return total;
+            };
+
+            const revenue = sumClass('rev-val');
+            const cos = sumClass('cos-val');
+            const grossProfit = revenue - cos;
+
+            const operatingExpenses = sumClass('exp-val');
+            const otherIncomeExp = sumClass('other-val');
+            const financeIncome = sumClass('fin-inc-val');
+            const financeCosts = sumClass('fin-cost-val');
+
+            const pbt = grossProfit - operatingExpenses + otherIncomeExp + financeIncome - financeCosts;
+            const tax = sumClass('tax-val');
+            const finalProfit = pbt - tax;
+
+            document.getElementById('totalRevenue').value = formatNumber(revenue);
+            document.getElementById('totalCOS').value = `(${formatNumber(cos)})`;
+            document.getElementById('grossProfit').value = formatNumber(grossProfit);
+            document.getElementById('profitBeforeTax').value = formatNumber(pbt);
+            document.getElementById('finalProfit').value = formatNumber(finalProfit);
+
+            const profitEl = document.getElementById('finalProfit');
+            profitEl.className = `currency-input text-lg font-extrabold ${finalProfit < 0 ? 'text-red-600' : 'text-green-700'}`;
+
+            const totalFixedCosts = operatingExpenses + financeCosts;
+
+            updateQuickSnapshot(totalFixedCosts);
+            updateAnalysis(finalProfit, revenue, cos, operatingExpenses, financeCosts);
+        }
+
+        function updateQuickSnapshot(fixedCosts) {
+            if (currentModel === 'product') {
+                const dailySales = parseFloat(document.getElementById('dailySales').value) || 0;
+                const unitCost = parseFloat(document.getElementById('unitCost').value) || 0;
+                const markupPercent = parseFloat(document.getElementById('markupPercent').value) || 0;
+
+                const annualUnits = (dailySales * 30) * 12;
+                const salesPrice = unitCost * (1 + (markupPercent / 100));
+                const cm = salesPrice - unitCost;
+
+                // 1. Min Daily Units (Assuming constant markup)
+                let minDailyUnits = "N/A";
+                let minAnnualSales = fixedCosts;
+                if (cm > 0) {
+                    const annualBreakevenUnits = fixedCosts / cm;
+                    minDailyUnits = Math.ceil(annualBreakevenUnits / 360).toLocaleString();
+                    minAnnualSales = annualBreakevenUnits * salesPrice;
+                }
+
+                // 2. Min Price & Markup (Assuming constant daily sales units)
+                let minPrice = 0;
+                let minMarkup = 0;
+                if (annualUnits > 0) {
+                    minPrice = (fixedCosts / annualUnits) + unitCost;
+                    if (unitCost > 0) {
+                        minMarkup = ((minPrice - unitCost) / unitCost) * 100;
+                    }
+                }
+
+                document.getElementById('snapMinUnits').innerText = `${minDailyUnits} units`;
+                document.getElementById('snapMinPrice').innerText = annualUnits > 0 ? formatNumber(minPrice) : "Need units";
+                document.getElementById('snapMinMarkup').innerText = (annualUnits > 0 && unitCost > 0) ? `${minMarkup.toFixed(1)}%` : "N/A";
+                document.getElementById('snapMinRevProduct').innerText = formatNumber(minAnnualSales);
+
+            } else {
+                const dailyHours = parseFloat(document.getElementById('dailyHours').value) || 0;
+                const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+                const annualHours = dailyHours * 22 * 12; // 22 working days/mo
+
+                // 1. Min Daily Hours (Assuming constant rate)
+                let minDailyHours = "N/A";
+                if (hourlyRate > 0) {
+                    minDailyHours = (fixedCosts / hourlyRate / 12 / 22).toFixed(1);
+                }
+
+                // 2. Min Hourly Rate (Assuming constant hours)
+                let minRate = 0;
+                if (annualHours > 0) {
+                    minRate = fixedCosts / annualHours;
+                }
+
+                document.getElementById('snapMinHours').innerText = hourlyRate > 0 ? `${minDailyHours} hrs` : "Need rate";
+                document.getElementById('snapMinRate').innerText = annualHours > 0 ? formatNumber(minRate) : "Need hours";
+                document.getElementById('snapMinRevService').innerText = formatNumber(fixedCosts); // Breakeven rev is just fixed costs for services
+            }
+        }
+
+        function getPositioningNote() {
+            const positioning = document.getElementById('positioning').value;
+            if (positioning === 'better') {
+                return `<p>💡 <strong>Pricing Strategy:</strong> You've positioned yourself as better value than competitors. Thinner margins mean you'll need more volume to hit the same profit, so keep a close eye on your sales targets above.</p>`;
+            } else if (positioning === 'inline') {
+                return `<p>💡 <strong>Pricing Strategy:</strong> Pricing in-line with the market means you're competing on service, quality, or convenience rather than price. Make sure your marketing budget reflects that.</p>`;
+            } else if (positioning === 'premium') {
+                return `<p>💡 <strong>Pricing Strategy:</strong> Premium pricing gives you a stronger margin cushion, but your value proposition needs to clearly justify the higher price so customers don't churn to cheaper alternatives.</p>`;
+            }
+            return '';
+        }
+
+        function updateAnalysis(nettProfit, revenue, cos, opEx, financeCosts) {
+            const analysisSection = document.getElementById('analysisSection');
+            const analysisContent = document.getElementById('analysisContent');
+            const totalFixedCosts = opEx + financeCosts;
+
+            analysisSection.classList.remove('hidden');
+
+            let friendlyIntro = "";
+            let advice = "";
+
+            if (currentModel === 'product') {
+                const unitCost = parseFloat(document.getElementById('unitCost').value) || 0;
+                const markupPercent = parseFloat(document.getElementById('markupPercent').value) || 0;
+                const salesPrice = unitCost * (1 + (markupPercent / 100));
+                const contributionMargin = salesPrice - unitCost;
+
+                if (unitCost <= 0) {
+                    // No pricing data entered yet - show neutral guidance instead of a blank panel.
+                    analysisSection.className = "mt-8 p-6 rounded-lg border border-slate-200 bg-slate-50";
+                    advice = `<p class="text-slate-600">Enter your <strong>Raw Material Cost per Unit</strong> and <strong>Desired Markup</strong> above to see a personalized break-even target and profit outlook.</p>`;
+                } else if (contributionMargin <= 0) {
+                     analysisSection.className = "mt-8 p-6 rounded-lg border border-red-300 bg-red-50";
+                     advice = `<p class="font-bold text-red-700 text-base">🚨 Critical Warning: You are selling your product for less than (or equal to) what it costs to make! You must increase your markup percentage or reduce your unit cost immediately to have a viable business.</p>`;
+                } else {
+                    const annualBreakevenUnits = totalFixedCosts / contributionMargin;
+                    const dailyBreakeven = Math.ceil(annualBreakevenUnits / 360);
+                    const safetyMargin = (nettProfit > 0) ? Math.floor(nettProfit / contributionMargin) : 0;
+
+                    if (nettProfit < 0) {
+                        analysisSection.className = "mt-8 p-6 rounded-lg border border-orange-200 bg-orange-50";
+                        friendlyIntro = `<p class="font-semibold text-orange-800 text-base mb-3">Based on your inputs, the business will currently run at a loss. Here is what needs to change to fix it:</p>`;
+
+                        advice += `<p>📦 <strong>The "Keep the Lights On" Target:</strong> You must sell at least <strong>${dailyBreakeven.toLocaleString()} units every single day</strong> just to cover your expenses and pay your desired salary. Anything less means you are paying out of pocket.</p>`;
+
+                        const currentSalary = parseFloat(document.getElementById('expOwnerSalary').value) || 0;
+                        const maxSustainableSalary = Math.max(0, currentSalary + nettProfit);
+                        advice += `<p>📉 <strong>Salary Reality Check:</strong> If you cannot increase daily sales right now, you need to reduce your monthly owner draw to a maximum of <strong>${formatNumber(maxSustainableSalary / 12)}</strong> to stop bleeding cash.</p>`;
+                    } else {
+                        analysisSection.className = "mt-8 p-6 rounded-lg border border-green-200 bg-green-50";
+                        friendlyIntro = `<p class="font-semibold text-green-800 text-base mb-3">Great news! Your business model is currently projected to be profitable.</p>`;
+
+                        advice += `<p>🎯 <strong>Your Daily Target:</strong> You only need to sell <strong>${dailyBreakeven.toLocaleString()} units per day</strong> to cover all costs and pay yourself. Because you plan to sell more than this, you are making a profit!</p>`;
+                        advice += `<p>🛡️ <strong>Your Safety Cushion:</strong> You can afford to sell <strong>${safetyMargin.toLocaleString()} fewer units per year</strong> before you start losing money. This is your "breathing room" if the market slows down.</p>`;
+                        advice += `<p>🚀 <strong>Growth Power:</strong> Because your fixed costs (like rent) are already covered, every extra unit you sell puts an additional <strong>${formatNumber(contributionMargin)}</strong> straight into your bottom-line profit.</p>`;
+                    }
+                    advice += getPositioningNote();
+                }
+            } else {
+                const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+
+                if (hourlyRate <= 0) {
+                     // No hourly rate entered yet - show neutral guidance instead of a blank panel.
+                     analysisSection.className = "mt-8 p-6 rounded-lg border border-slate-200 bg-slate-50";
+                     advice = `<p class="text-slate-600">Enter your <strong>Hourly Rate</strong> above to see a personalized break-even target and profit outlook.</p>`;
+                } else {
+                    const annualHoursNeeded = totalFixedCosts / hourlyRate;
+                    const dailyHoursNeeded = (annualHoursNeeded / 12 / 22).toFixed(1);
+                    const safetyMarginHours = (nettProfit > 0) ? Math.floor(nettProfit / hourlyRate) : 0;
+
+                    if (nettProfit < 0) {
+                        analysisSection.className = "mt-8 p-6 rounded-lg border border-orange-200 bg-orange-50";
+                        friendlyIntro = `<p class="font-semibold text-orange-800 text-base mb-3">Based on your inputs, the business will currently run at a loss. Here is what needs to change to fix it:</p>`;
+
+                        advice += `<p>⏱️ <strong>The "Keep the Lights On" Target:</strong> You must actually bill customers for at least <strong>${dailyHoursNeeded} hours every working day</strong> (assuming 22 work days/month) just to cover expenses and your desired salary.</p>`;
+
+                        const currentSalary = parseFloat(document.getElementById('expOwnerSalary').value) || 0;
+                        const maxSustainableSalary = Math.max(0, currentSalary + nettProfit);
+                        advice += `<p>📉 <strong>Salary Reality Check:</strong> If you cannot find enough client work to bill those hours, you need to reduce your monthly owner draw to a maximum of <strong>${formatNumber(maxSustainableSalary / 12)}</strong> to avoid debt.</p>`;
+                    } else {
+                        analysisSection.className = "mt-8 p-6 rounded-lg border border-green-200 bg-green-50";
+                        friendlyIntro = `<p class="font-semibold text-green-800 text-base mb-3">Great news! Your service model is currently projected to be profitable.</p>`;
+
+                        advice += `<p>🎯 <strong>Your Daily Target:</strong> You only need to bill <strong>${dailyHoursNeeded} hours per day</strong> to cover all costs and pay yourself. Because you plan to bill more than this, you are making a profit!</p>`;
+                        advice += `<p>🛡️ <strong>Your Safety Cushion:</strong> You can afford to bill <strong>${safetyMarginHours.toLocaleString()} fewer hours per year</strong> before you start losing money. This is your buffer for sick days or taking a holiday.</p>`;
+                        advice += `<p>🚀 <strong>Growth Power:</strong> Once you hit your daily target, every extra hour you bill puts <strong>${formatNumber(hourlyRate)}</strong> directly into your final profit.</p>`;
+                    }
+                    advice += getPositioningNote();
+                }
+            }
+
+            analysisContent.innerHTML = friendlyIntro + advice;
+        }
+
+        window.onload = () => calculateAll();
+    </script>
+</body>
+</html>
