@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impact Physics Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .input-field {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            border-color: #38bdf8;
+            outline: none;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+        }
+        .energy-text { color: #fbbf24; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 lg:p-8">
+
+    <div class="max-w-5xl w-full space-y-6">
+        <!-- Header -->
+        <header class="text-center space-y-2">
+            <h1 class="text-3xl font-bold tracking-tight text-white">Impact Energy Calculator</h1>
+            <p class="text-slate-400">Visualizing the physics of "Speed Kills"</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left Column: Controls and Outputs -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="glass-card rounded-3xl p-6 shadow-2xl h-full">
+                    <!-- Collision Type Toggle -->
+                    <div class="flex bg-slate-900/50 p-1 rounded-xl mb-6">
+                        <button id="singleBtn" onclick="setMode('single')" class="flex-1 py-2 rounded-lg text-sm font-semibold transition-all bg-sky-600 text-white">
+                            Static Object
+                        </button>
+                        <button id="headOnBtn" onclick="setMode('headon')" class="flex-1 py-2 rounded-lg text-sm font-semibold transition-all text-slate-400 hover:text-white">
+                            Head-on
+                        </button>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Inputs: Vehicle 1 -->
+                        <div class="space-y-4">
+                            <h3 id="labelV1" class="text-sky-400 font-semibold uppercase text-xs tracking-wider">Vehicle 1</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 uppercase">Mass (kg)</label>
+                                    <input type="number" id="mass1" value="1500" class="input-field w-full px-3 py-2 rounded-xl text-white text-sm" oninput="calculate()">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 uppercase">Speed (km/h)</label>
+                                    <input type="number" id="speed1" value="50" class="input-field w-full px-3 py-2 rounded-xl text-white text-sm" oninput="calculate()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Inputs: Vehicle 2 (Conditional) -->
+                        <div id="v2Container" class="space-y-4 opacity-30 pointer-events-none transition-opacity duration-300 border-t border-slate-700/50 pt-4">
+                            <h3 class="text-rose-400 font-semibold uppercase text-xs tracking-wider">Vehicle 2</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 uppercase">Mass (kg)</label>
+                                    <input type="number" id="mass2" value="1500" class="input-field w-full px-3 py-2 rounded-xl text-white text-sm" oninput="calculate()">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 uppercase">Speed (km/h)</label>
+                                    <input type="number" id="speed2" value="50" class="input-field w-full px-3 py-2 rounded-xl text-white text-sm" oninput="calculate()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Summary Outputs -->
+                        <div class="bg-slate-900/40 p-4 rounded-2xl border border-slate-700/30 text-center">
+                            <p class="text-slate-400 text-xs mb-1 uppercase font-bold">Total Energy Release</p>
+                            <h2 id="joulesOutput" class="text-3xl font-extrabold energy-text">0 J</h2>
+                            <p id="tntOutput" class="text-sm font-medium text-slate-300 mt-1">0 sticks of TNT</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Visualizer and Graph -->
+            <div class="lg:col-span-7 space-y-6">
+                <div class="glass-card rounded-3xl p-6 shadow-2xl flex flex-col h-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-white font-semibold">The Exponential Effect</h3>
+                        <span class="text-[10px] text-slate-500 bg-slate-800 px-2 py-1 rounded">KE = ½mv²</span>
+                    </div>
+                    
+                    <!-- Graph Container -->
+                    <div class="relative flex-grow min-h-[300px]">
+                        <canvas id="impactChart"></canvas>
+                    </div>
+
+                    <div class="mt-4 grid grid-cols-2 gap-4">
+                        <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-700/30">
+                            <p class="text-[10px] text-slate-400 uppercase font-bold">Equivalent Drop</p>
+                            <p id="fallOutput" class="text-md font-semibold text-white">0.0 m</p>
+                        </div>
+                        <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-700/30">
+                            <p class="text-[10px] text-slate-400 uppercase font-bold">Scientific Notation</p>
+                            <p id="scientificOutput" class="text-xs font-mono text-sky-400">0.00e0 J</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="text-center text-slate-500 text-xs leading-relaxed max-w-2xl mx-auto py-4">
+            <p>Physics Note: Damage is proportional to the square of velocity. A 10% increase in speed results in a ~21% increase in energy. A 100% increase (doubling speed) results in a 400% increase (quadrupling energy).</p>
+        </footer>
+    </div>
+
+    <script>
+        let mode = 'single';
+        let chart = null;
+
+        function initChart() {
+            const ctx = document.getElementById('impactChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Impact Energy (kJ)',
+                        data: [],
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0
+                    }, {
+                        label: 'Current Speed',
+                        data: [],
+                        backgroundColor: '#f87171',
+                        borderColor: '#fff',
+                        borderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        showLine: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#64748b', font: { size: 10 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#64748b', font: { size: 10 } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y.toLocaleString() + ' kJ';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function setMode(newMode) {
+            mode = newMode;
+            const singleBtn = document.getElementById('singleBtn');
+            const headOnBtn = document.getElementById('headOnBtn');
+            const v2Container = document.getElementById('v2Container');
+            const labelV1 = document.getElementById('labelV1');
+
+            if (mode === 'single') {
+                singleBtn.className = "flex-1 py-2 rounded-lg text-sm font-semibold transition-all bg-sky-600 text-white shadow-lg";
+                headOnBtn.className = "flex-1 py-2 rounded-lg text-sm font-semibold transition-all text-slate-400 hover:text-white";
+                v2Container.classList.add('opacity-30', 'pointer-events-none');
+                labelV1.innerText = "Vehicle";
+            } else {
+                headOnBtn.className = "flex-1 py-2 rounded-lg text-sm font-semibold transition-all bg-rose-600 text-white shadow-lg";
+                singleBtn.className = "flex-1 py-2 rounded-lg text-sm font-semibold transition-all text-slate-400 hover:text-white";
+                v2Container.classList.remove('opacity-30', 'pointer-events-none');
+                labelV1.innerText = "Vehicle 1";
+            }
+            calculate();
+        }
+
+        function calculate() {
+            const m1 = parseFloat(document.getElementById('mass1').value) || 0;
+            const v1_kmh = parseFloat(document.getElementById('speed1').value) || 0;
+            const m2 = mode === 'headon' ? (parseFloat(document.getElementById('mass2').value) || 0) : 0;
+            const v2_kmh = mode === 'headon' ? (parseFloat(document.getElementById('speed2').value) || 0) : 0;
+
+            const v1_ms = v1_kmh / 3.6;
+            const v2_ms = v2_kmh / 3.6;
+
+            const energy1 = 0.5 * m1 * Math.pow(v1_ms, 2);
+            const energy2 = 0.5 * m2 * Math.pow(v2_ms, 2);
+            const totalJoules = energy1 + energy2;
+
+            // UI Updates
+            document.getElementById('joulesOutput').innerText = formatJoules(totalJoules);
+            document.getElementById('tntOutput').innerText = (totalJoules / 1000000).toFixed(2) + " sticks of TNT";
+            document.getElementById('scientificOutput').innerText = totalJoules.toExponential(2) + " J";
+            
+            const gravity = 9.81;
+            const fallHeight = totalJoules / (m1 * gravity);
+            document.getElementById('fallOutput').innerText = fallHeight.toFixed(1) + " m (" + (fallHeight * 3.28).toFixed(1) + " ft)";
+
+            updateChart(m1, v1_kmh, m2, v2_kmh, totalJoules);
+        }
+
+        function updateChart(m1, v1_current, m2, v2_current, currentTotal) {
+            const labels = [];
+            const energyPoints = [];
+            const currentPoint = [];
+
+            // We generate points based on the primary vehicle's speed range
+            // starting from 0 up to 150% of current speed to show the curve
+            const maxRange = Math.max(v1_current * 1.5, 120);
+            const step = maxRange / 10;
+
+            for (let i = 0; i <= 10; i++) {
+                let speedAtStep = i * step;
+                labels.push(speedAtStep.toFixed(0) + " km/h");
+                
+                // Calculate energy at this step for Vehicle 1
+                let v_ms = speedAtStep / 3.6;
+                let e1 = 0.5 * m1 * Math.pow(v_ms, 2);
+                
+                // If head-on, we assume vehicle 2's speed scales proportionally for the visualization
+                let e2 = 0;
+                if (mode === 'headon') {
+                    let v2_scaled = (speedAtStep / v1_current) * v2_current || 0;
+                    e2 = 0.5 * m2 * Math.pow(v2_scaled / 3.6, 2);
+                }
+                
+                energyPoints.push((e1 + e2) / 1000); // in kJ
+                
+                // Identify where to put the red dot
+                // We use null for all points except the one closest to current speed
+                // or we add a specific point for the current speed
+            }
+
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = energyPoints;
+            
+            // Add the "Current Speed" dot specifically
+            // To make it look right on the curve, we find its position relative to steps
+            const currentX = v1_current;
+            const currentY = currentTotal / 1000;
+            
+            // We'll use a hidden dataset for the dot and just use its index
+            // but for Chart JS it's easier to just provide the exact point
+            chart.data.datasets[1].data = labels.map((l, idx) => {
+                let stepSpeed = idx * step;
+                if (Math.abs(stepSpeed - v1_current) < (step / 2)) return currentY;
+                return null;
+            });
+
+            chart.update();
+        }
+
+        function formatJoules(j) {
+            if (j >= 1000000) return (j / 1000000).toFixed(2) + " MJ";
+            if (j >= 1000) return (j / 1000).toFixed(2) + " kJ";
+            return j.toFixed(0) + " J";
+        }
+
+        window.onload = function() {
+            initChart();
+            calculate();
+        };
+    </script>
+</body>
+</html>
